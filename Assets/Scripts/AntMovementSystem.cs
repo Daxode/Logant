@@ -37,10 +37,13 @@ public partial class AntMovementSystem : SystemBase
                     // Get Target Location
                     var targetsFromEntity = GetBufferFromEntity<EntityBufferElement>(true);
                     var targets = targetsFromEntity[executionData.storageEntity];
-                    var targetLocation = GetComponent<Translation>(targets[ant.id % targets.Length]);
+                    var targetLocation = GetComponent<Translation>(targets[(int) (ant.id % targets.Length)]).Value;
+                    var rnd = Random.CreateFromIndex(ant.id);
+                    var flatDir = rnd.NextFloat2Direction() * rnd.NextFloat() * .5f;
+                    targetLocation += new float3(flatDir.x,0,flatDir.y);
                     
                     // Calculate Flat Direction to destination
-                    var dir = math.normalizesafe(targetLocation.Value - ltw.Position) * 15;
+                    var dir = math.normalizesafe(targetLocation - ltw.Position) * 15;
                     dir *= new float3(1, 0, 1);
                     
                     // Apply Velocity

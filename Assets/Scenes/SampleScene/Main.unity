@@ -181,7 +181,7 @@ GameObject:
   m_Component:
   - component: {fileID: 849646326}
   m_Layer: 0
-  m_Name: Points
+  m_Name: Locations
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6602,7 +6602,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   antPrefab: {fileID: 1163316477580434692, guid: 4090457c2ee90a344bb50a94d6af37b7, type: 3}
-  numberOfAnts: 1000
+  numberOfAnts: 100
 --- !u!114 &1828559434
 MonoBehaviour:
   m_ObjectHideFlags: 0
