@@ -48,14 +48,14 @@ public partial class AnthillSpawnSystem : SystemBase
         {
             if (data.numberOfAnts > data.numberOfAntsSpawned)
             {
-                data.numberOfAntsSpawned++;
-
                 var direction = data.random.NextFloat2Direction();
                 var magnitude = data.random.NextFloat();
                 float2 flatOffset = direction * magnitude;
 
                 Entity spawnedAnt = EntityManager.Instantiate(ant.prefab);
                 SetComponent(spawnedAnt, new Translation { Value = new float3(flatOffset.x, 0, flatOffset.y)});
+                SetComponent(spawnedAnt, new AntState { id = data.numberOfAntsSpawned });
+                data.numberOfAntsSpawned++;
             }
         }).WithStructuralChanges().Run();
     }
