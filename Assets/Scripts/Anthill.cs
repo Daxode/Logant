@@ -42,18 +42,16 @@ public partial class AnthillSpawnSystem : SystemBase
 {
     protected override void OnUpdate()
     {
-
-
-        Entities.ForEach((ref AnthillData data, in AntPrefab ant) =>
+        Entities.ForEach((ref AnthillData data, in Translation translation, in AntPrefab ant) =>
         {
             if (data.numberOfAnts > data.numberOfAntsSpawned)
             {
                 var direction = data.random.NextFloat2Direction();
                 var magnitude = data.random.NextFloat();
-                float2 flatOffset = direction * magnitude;
+                var flatOffset = direction * magnitude*0.5f;
 
-                Entity spawnedAnt = EntityManager.Instantiate(ant.prefab);
-                SetComponent(spawnedAnt, new Translation { Value = new float3(flatOffset.x, 0, flatOffset.y)});
+                var spawnedAnt = EntityManager.Instantiate(ant.prefab);
+                SetComponent(spawnedAnt, new Translation { Value = translation.Value + new float3(flatOffset.x, 0, flatOffset.y)});
                 SetComponent(spawnedAnt, new AntState { id = data.numberOfAntsSpawned });
                 data.numberOfAntsSpawned++;
             }
