@@ -1,0 +1,10 @@
+.idk {
+    position: absolute;
+    bottom: 0;
+    -unity-background-image-tint-color: rgba(255, 0, 0, 255);
+}
+
+.idk:hover {
+    width: 100%;
+    height: 100px;
+}
