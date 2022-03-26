@@ -2,6 +2,7 @@
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Extensions;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 public partial class GameManager : SystemBase
@@ -27,5 +28,10 @@ public partial class GameManager : SystemBase
             }).Run();
             m_ButtonClicked = false;
         }
+
+        #if !UNITY_EDITOR
+        if (Input.GetKey(KeyCode.Escape)) 
+            Application.Quit();
+        #endif
     }
 }
