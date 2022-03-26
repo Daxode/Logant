@@ -12,7 +12,7 @@ public class Anthill : MonoBehaviour, IConvertGameObjectToEntity, IDeclareRefere
     [SerializeField]
     GameObject antPrefab;
     [SerializeField]
-    int numberOfAnts;
+    uint numberOfAnts;
 
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
@@ -33,8 +33,8 @@ public struct AntPrefab : IComponentData
 
 public struct AnthillData : IComponentData
 {
-    public int numberOfAnts;
-    public int numberOfAntsSpawned;
+    public uint numberOfAnts;
+    public uint numberOfAntsSpawned;
     public Random random;
 }
 

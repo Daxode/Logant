@@ -5,7 +5,7 @@ using Unity.Mathematics;
 public static class meth
 {
     // Returns the angle in degrees between /from/ and /to/. This is always the smallest
-    public static float Angle(float3 from, float3 to)
+    static float Angle(float3 from, float3 to)
     {
         // sqrt(a) * sqrt(b) = sqrt(a * b) -- valid for real numbers
         var denominator = math.sqrt(math.lengthsq(from) * math.lengthsq(to));

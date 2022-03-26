@@ -5,7 +5,7 @@ using Unity.Entities;
 [GenerateAuthoringComponent]
 public struct AntState : IComponentData
 {
-    public int id;
+    public uint id;
     public int executionLine;
 }
 
