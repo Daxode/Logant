@@ -5,13 +5,21 @@ using Unity.Transforms;
 
 public partial class AntMovementSystem : SystemBase
 {
+    EndSimulationEntityCommandBufferSystem EndSimulationEntityCommandBufferSystem;
+    
+    protected override void OnCreate()
+    {
+        EndSimulationEntityCommandBufferSystem = World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
+    }
+
     protected override void OnUpdate()
     {
         var colonyExecutionEntity = GetSingletonEntity<ColonyExecutionData>();
         var colonyExecutionDataBuffer = GetBuffer<ColonyExecutionData>(colonyExecutionEntity, true);
         var deltaTime = Time.DeltaTime;
+        var ecb = EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
-        Entities.WithReadOnly(colonyExecutionDataBuffer).ForEach((ref PhysicsVelocity vel, in AntState ant, in Translation translation) =>
+        Entities.WithReadOnly(colonyExecutionDataBuffer).ForEach((Entity e, int entityInQueryIndex, ref PhysicsVelocity vel, in AntState ant, in Translation translation) =>
         {
             var executionData = colonyExecutionDataBuffer[ant.executionLine];
 
@@ -20,6 +28,7 @@ public partial class AntMovementSystem : SystemBase
                 case ColonyExecutionType.GoTo:
                     break;
                 case ColonyExecutionType.Stop:
+                    ecb.RemoveComponent<AntState>(entityInQueryIndex, e);
                     break;
                 case ColonyExecutionType.AntMoveTo:
                     var targetsFromEntity = GetBufferFromEntity<EntityBufferElement>(true);
@@ -29,10 +38,8 @@ public partial class AntMovementSystem : SystemBase
                     break;
                 case ColonyExecutionType.AntWaitOn:
                     break;
-                default:
-                    break;
             }
-
         }).ScheduleParallel();
+        EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
     }
 }

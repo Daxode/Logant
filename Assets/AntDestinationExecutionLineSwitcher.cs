@@ -1,18 +1,16 @@
-using System.ComponentModel;
 using Unity.Burst;
+using Unity.Collections;
 using UnityEngine;
 using Unity.Entities;
 using Unity.Physics;
 using Unity.Physics.Systems;
 
+[UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 public partial class AntDestinationExecutionLineSwitcher : SystemBase
 {
     StepPhysicsWorld PhysicsWorld;
     
-    protected override void OnCreate()
-    {
-        PhysicsWorld = World.GetExistingSystem<StepPhysicsWorld>();
-    }
+    protected override void OnCreate() => PhysicsWorld = World.GetExistingSystem<StepPhysicsWorld>();
 
     protected override void OnUpdate()
     {
@@ -24,10 +22,9 @@ public partial class AntDestinationExecutionLineSwitcher : SystemBase
         Dependency = antDestJob.Schedule(PhysicsWorld.Simulation, Dependency);
     }
     
-    [BurstCompile]
     struct AntDestinationTriggerJob : ITriggerEventsJob
     {
-        [Unity.Collections.ReadOnly] public ComponentDataFromEntity<ExecutionLine> lineFromEntity;
+        [ReadOnly] public ComponentDataFromEntity<ExecutionLine> lineFromEntity;
         public ComponentDataFromEntity<AntState> antStateFromEntity;
 
         public void Execute(TriggerEvent triggerEvent)
@@ -35,10 +32,10 @@ public partial class AntDestinationExecutionLineSwitcher : SystemBase
             var entityA = triggerEvent.EntityA;
             var entityB = triggerEvent.EntityB;
 
-            if (lineFromEntity.HasComponent(entityA) && antStateFromEntity.HasComponent(entityB))
-                SetLine(entityB, entityA);
-            else if (lineFromEntity.HasComponent(entityA) && antStateFromEntity.HasComponent(entityB))
+            if (antStateFromEntity.HasComponent(entityA) && lineFromEntity.HasComponent(entityB))
                 SetLine(entityA, entityB);
+            else if (lineFromEntity.HasComponent(entityA) && antStateFromEntity.HasComponent(entityB))
+                SetLine(entityB, entityA);
 
         }
         
