@@ -50,7 +50,7 @@ public partial class AnthillSpawnSystem : SystemBase
         // {
             Entities.ForEach((ref AnthillData data, in Translation translation, in AntPrefab ant) =>
             {
-                const int BatchCount = 10;
+                const int BatchCount = 1;
                 if (data.numberOfAnts > data.numberOfAntsSpawned+BatchCount)
                 {
                     var spawnedAnts = EntityManager.Instantiate(ant.prefab, BatchCount, Allocator.Temp);
@@ -63,6 +63,7 @@ public partial class AnthillSpawnSystem : SystemBase
                         SetComponent(spawnedAnts[(int) i], new AntState {id = data.numberOfAntsSpawned+i});
                     }
                     data.numberOfAntsSpawned+=BatchCount;
+                    spawnedAnts.Dispose();
                 }
             }).WithStructuralChanges().Run();
         //     SpawnTimeLeft = SpawnInterval;
@@ -76,7 +77,7 @@ public partial class PhysicsLockingSystem : SystemBase
     {
         Entities.WithAll<InertiaNotLocked>().ForEach((Entity e,ref PhysicsMass mass) =>
         {
-            mass.InverseInertia = math.up();
+            mass.InverseInertia = math.up()*1f;
             EntityManager.RemoveComponent<InertiaNotLocked>(e);
         }).WithStructuralChanges().Run();
     }

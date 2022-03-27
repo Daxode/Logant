@@ -61,13 +61,13 @@ public partial class AntMovementSystem : SystemBase
                     targetLocation += new float3(flatDir.x,0,flatDir.y);
                     
                     // Calculate Flat Direction to destination
-                    var dir = math.normalizesafe(targetLocation - ltw.Position) * 5;
+                    var dir = math.normalizesafe(targetLocation - ltw.Position) * .9f;
                     dir *= new float3(1, 0, 1);
                     
                     // Apply Velocity
                     mass.GetImpulseFromForce(dir, ForceMode.Force, in deltaTime, out var impulse, out var massImpulse);
                     vel.ApplyLinearImpulse(in massImpulse, in impulse);
-                    vel.ApplyAngularImpulse(in mass, deltaTime*math.up()*meth.SignedAngle(ltw.Forward, dir, math.up()));
+                    vel.ApplyAngularImpulse(in mass, 10f*deltaTime*math.up()*meth.SignedAngle(ltw.Forward, dir, math.up()));
                     break;
                 case ColonyExecutionType.AntStopOrGo:
                     break;
