@@ -50,8 +50,8 @@ MonoBehaviour:
   m_MotionType: 0
   m_Smoothing: 0
   m_Mass: 1
-  m_LinearDamping: 0.01
-  m_AngularDamping: 0.05
+  m_LinearDamping: 0.5
+  m_AngularDamping: 10
   m_InitialLinearVelocity:
     x: 0
     y: 0
@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b275e5f92732148048d7b77e264ac30e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ShapeType: 2
+  m_ShapeType: 0
   m_PrimitiveCenter:
     x: 0
     y: 0
@@ -139,7 +139,7 @@ MonoBehaviour:
     m_Friction:
       m_Override: 0
       m_Value:
-        Value: 1
+        Value: 0.98
         CombineMode: 0
     m_Restitution:
       m_Override: 0
@@ -255,6 +255,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 0
   executionLine: 0
+  flags: 0
 --- !u!1 &1163316477835888377
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 using Unity.Entities;
 using Random = Unity.Mathematics.Random;
@@ -38,24 +39,34 @@ public struct AnthillData : IComponentData
     public Random random;
 }
 
+[UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 public partial class AnthillSpawnSystem : SystemBase
 {
+    // float SpawnInterval = 0.05f;
+    // float SpawnTimeLeft;
     protected override void OnUpdate()
     {
-        Entities.ForEach((ref AnthillData data, in Translation translation, in AntPrefab ant) =>
-        {
-            if (data.numberOfAnts > data.numberOfAntsSpawned)
+        // if (SpawnTimeLeft < 0)
+        // {
+            Entities.ForEach((ref AnthillData data, in Translation translation, in AntPrefab ant) =>
             {
-                var direction = data.random.NextFloat2Direction();
-                var magnitude = data.random.NextFloat();
-                var flatOffset = direction * magnitude*0.5f;
-
-                var spawnedAnt = EntityManager.Instantiate(ant.prefab);
-                SetComponent(spawnedAnt, new Translation { Value = translation.Value + new float3(flatOffset.x, 0, flatOffset.y)});
-                SetComponent(spawnedAnt, new AntState { id = data.numberOfAntsSpawned });
-                data.numberOfAntsSpawned++;
-            }
-        }).WithStructuralChanges().Run();
+                const int BatchCount = 10;
+                if (data.numberOfAnts > data.numberOfAntsSpawned+BatchCount)
+                {
+                    var spawnedAnts = EntityManager.Instantiate(ant.prefab, BatchCount, Allocator.Temp);
+                    for (uint i = 0; i < BatchCount; i++)
+                    {
+                        var direction = data.random.NextFloat2Direction();
+                        var magnitude = data.random.NextFloat();
+                        var flatOffset = direction * magnitude * 0.5f;
+                        SetComponent(spawnedAnts[(int) i], new Translation {Value = translation.Value + new float3(flatOffset.x, 0, flatOffset.y)});
+                        SetComponent(spawnedAnts[(int) i], new AntState {id = data.numberOfAntsSpawned+i});
+                    }
+                    data.numberOfAntsSpawned+=BatchCount;
+                }
+            }).WithStructuralChanges().Run();
+        //     SpawnTimeLeft = SpawnInterval;
+        // }else SpawnTimeLeft -= Time.DeltaTime;
     }
 }
 

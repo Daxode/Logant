@@ -34,16 +34,34 @@ public partial class AntMovementSystem : SystemBase
                     ecb.RemoveComponent<AntState>(entityInQueryIndex, e);
                     break;
                 case ColonyExecutionType.AntMoveTo:
-                    // Get Target Location
-                    var targetsFromEntity = GetBufferFromEntity<EntityBufferElement>(true);
-                    var targets = targetsFromEntity[executionData.storageEntity];
-                    var targetLocation = GetComponent<Translation>(targets[(int) (ant.id % targets.Length)]).Value;
                     var rnd = Random.CreateFromIndex(ant.id);
+                    // Get Target Location
+                    float3 targetLocation;
+                    if ((ant.flags & AntFlags.HasPickUp) == AntFlags.HasPickUp)
+                    {
+                        var targetsFromEntity =  GetBufferFromEntity<DropDownEntityElement>(true);
+                        if (targetsFromEntity.HasComponent(executionData.storageEntity))
+                        {
+                            var targets = targetsFromEntity[executionData.storageEntity];
+                            targetLocation = GetComponent<Translation>(targets[rnd.NextInt(targets.Length)]).Value;
+                        }
+                        else
+                        {
+                            ecb.DestroyEntity(entityInQueryIndex, e);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        var targetsFromEntity =  GetBufferFromEntity<PickUpEntityElement>(true);
+                        var targets = targetsFromEntity[executionData.storageEntity];
+                        targetLocation = GetComponent<Translation>(targets[rnd.NextInt(targets.Length)]).Value;
+                    }
                     var flatDir = rnd.NextFloat2Direction() * rnd.NextFloat() * .5f;
                     targetLocation += new float3(flatDir.x,0,flatDir.y);
                     
                     // Calculate Flat Direction to destination
-                    var dir = math.normalizesafe(targetLocation - ltw.Position) * 15;
+                    var dir = math.normalizesafe(targetLocation - ltw.Position) * 5;
                     dir *= new float3(1, 0, 1);
                     
                     // Apply Velocity
@@ -51,7 +69,7 @@ public partial class AntMovementSystem : SystemBase
                     vel.ApplyLinearImpulse(in massImpulse, in impulse);
                     vel.ApplyAngularImpulse(in mass, deltaTime*math.up()*meth.SignedAngle(ltw.Forward, dir, math.up()));
                     break;
-                case ColonyExecutionType.AntWaitOn:
+                case ColonyExecutionType.AntStopOrGo:
                     break;
             }
         }).ScheduleParallel();

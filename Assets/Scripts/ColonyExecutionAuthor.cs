@@ -7,7 +7,7 @@ public enum ColonyExecutionType
     GoTo,
     Stop,
     AntMoveTo,
-    AntWaitOn
+    AntStopOrGo
 }
 
 [InternalBufferCapacity(32)]
@@ -26,9 +26,17 @@ public struct ColonyExecutionData : IBufferElementData
 public struct ColonyExecutionDataStorageTag : IComponentData {}
 
 [InternalBufferCapacity(8)]
-public struct EntityBufferElement : IBufferElementData
+public struct PickUpEntityElement : IBufferElementData
 {
     public Entity m_E;
-    public static implicit operator EntityBufferElement(Entity e) => new EntityBufferElement {m_E = e};
-    public static implicit operator Entity(EntityBufferElement elem) => elem.m_E;
+    public static implicit operator PickUpEntityElement(Entity e) => new PickUpEntityElement {m_E = e};
+    public static implicit operator Entity(PickUpEntityElement elem) => elem.m_E;
+}
+
+[InternalBufferCapacity(8)]
+public struct DropDownEntityElement : IBufferElementData
+{
+    public Entity m_E;
+    public static implicit operator DropDownEntityElement(Entity e) => new DropDownEntityElement {m_E = e};
+    public static implicit operator Entity(DropDownEntityElement elem) => elem.m_E;
 }

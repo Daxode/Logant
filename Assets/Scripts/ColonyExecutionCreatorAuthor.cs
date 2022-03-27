@@ -10,10 +10,18 @@ public class ColonyExecutionCreatorAuthor : MonoBehaviour, IConvertGameObjectToE
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
         dstManager.AddComponentData(entity, new ColonyExecutionCreatorTag());
-        var buffer = dstManager.AddBuffer<EntityBufferElement>(entity);
+        var buffer = dstManager.AddBuffer<LocationEntityElement>(entity);
         foreach (var point in points) 
             buffer.Add(conversionSystem.GetPrimaryEntity(point));
     }
+}
+
+[InternalBufferCapacity(8)]
+public struct LocationEntityElement : IBufferElementData
+{
+    public Entity m_E;
+    public static implicit operator LocationEntityElement(Entity e) => new LocationEntityElement {m_E = e};
+    public static implicit operator Entity(LocationEntityElement elem) => elem.m_E;
 }
 
 public struct ColonyExecutionCreatorTag : IComponentData {}
@@ -30,32 +38,51 @@ public partial class SpawnExecutionSystem : SystemBase
     protected override void OnStartRunning()
     {
         var ColonyExecutionCreator = GetSingletonEntity<ColonyExecutionCreatorTag>();
-        var points = GetBuffer<EntityBufferElement>(ColonyExecutionCreator);
-        var HomeEntity = points[0];
-        var FoodEntity = points[1];
-        var ButtonEntity = points[2];
-        var LakeEntity = points[3];
+        var points = GetBuffer<LocationEntityElement>(ColonyExecutionCreator);
+        Entity HomeEntity = points[0];
+        Entity FoodEntity = points[1];
+        Entity ButtonEntity = points[2];
+        Entity LakeEntity = points[3];
 
-        // Entry 0
-        var storage0 = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
-        var storage0EntityBuffer = EntityManager.AddBuffer<EntityBufferElement>(storage0);
-        storage0EntityBuffer.Add(LakeEntity);
-        storage0EntityBuffer.Add(FoodEntity);
-        storage0EntityBuffer.Add(ButtonEntity);
+        // Entry Home
+        var homeStorage = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
+        var storage0PickBuffer = EntityManager.AddBuffer<PickUpEntityElement>(homeStorage);
+        storage0PickBuffer.Add(LakeEntity);
+        storage0PickBuffer.Add(ButtonEntity);
         
-        // Entry 1
-        var storage1 = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
-        var storage1EntityBuffer = EntityManager.AddBuffer<EntityBufferElement>(storage1);
-        storage1EntityBuffer.Add(HomeEntity);
+        // Entry Lake
+        var lakeStorage = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
+        var lakeStoragePickBuffer = EntityManager.AddBuffer<PickUpEntityElement>(lakeStorage);
+        lakeStoragePickBuffer.Add(FoodEntity);
+        var lakeStorageDropBuffer = EntityManager.AddBuffer<DropDownEntityElement>(lakeStorage);
+        lakeStorageDropBuffer.Add(HomeEntity);
         
+        // Entry Button
+        var buttonStorage = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
+        var buttonStoragePickBuffer = EntityManager.AddBuffer<PickUpEntityElement>(buttonStorage);
+        buttonStoragePickBuffer.Add(FoodEntity);
+        var buttonStorageDropBuffer = EntityManager.AddBuffer<DropDownEntityElement>(buttonStorage);
+        buttonStorageDropBuffer.Add(HomeEntity);
+        buttonStorageDropBuffer.Add(LakeEntity);
+
+        // Entry Food
+        var foodStorage = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
+        var foodStorageDropBuffer = EntityManager.AddBuffer<DropDownEntityElement>(foodStorage);
+        foodStorageDropBuffer.Add(HomeEntity);
+        foodStorageDropBuffer.Add(ButtonEntity);
+
         // Add to Execution Buffer
         var ColonyExecution = EntityManager.CreateEntity();
         EntityManager.SetName(ColonyExecution, "Colony Execution");
         var executionDataBuffer = EntityManager.AddBuffer<ColonyExecutionData>(ColonyExecution);
-        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.AntMoveTo, storage0));
-        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.AntMoveTo, storage1));
-        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.Stop));
-        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.Stop));
+        SetComponent(HomeEntity, new ExecutionLine{line = 0});
+        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.AntMoveTo, homeStorage));
+        SetComponent(LakeEntity, new ExecutionLine{line = 1});
+        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.AntMoveTo, lakeStorage));
+        SetComponent(ButtonEntity, new ExecutionLine{line = 2});
+        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.AntMoveTo, buttonStorage));
+        SetComponent(FoodEntity, new ExecutionLine{line = 3});
+        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.AntMoveTo, foodStorage));
     }
 
     protected override void OnUpdate() {}
