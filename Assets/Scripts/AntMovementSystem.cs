@@ -4,6 +4,7 @@ using Unity.Physics;
 using Unity.Physics.Extensions;
 using Unity.Transforms;
 
+[UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 public partial class AntMovementSystem : SystemBase
 {
     EndSimulationEntityCommandBufferSystem EndSimulationEntityCommandBufferSystem;
@@ -12,7 +13,7 @@ public partial class AntMovementSystem : SystemBase
     {
         EndSimulationEntityCommandBufferSystem = World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
     }
-
+    
     protected override void OnUpdate()
     {
         var colonyExecutionEntity = GetSingletonEntity<ColonyExecutionData>();
@@ -21,8 +22,9 @@ public partial class AntMovementSystem : SystemBase
         var ecb = EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
         Entities.WithReadOnly(colonyExecutionDataBuffer).ForEach((Entity e, int entityInQueryIndex, 
-            ref PhysicsVelocity vel, in PhysicsMass mass,
-            in AntState ant, in LocalToWorld ltw) =>
+            ref PhysicsVelocity vel, ref AntStack stack,
+            in PhysicsMass mass,
+            in LocalToWorld ltw, in AntState ant) =>
         {
             var executionData = colonyExecutionDataBuffer[ant.executionLine];
 
@@ -34,10 +36,11 @@ public partial class AntMovementSystem : SystemBase
                     ecb.RemoveComponent<AntState>(entityInQueryIndex, e);
                     break;
                 case ColonyExecutionType.AntMoveTo:
-                    var rnd = Random.CreateFromIndex(ant.id);
+                    var rnd = Random.CreateFromIndex((uint) ant.id);
+                    var hasPickedUp = stack.Pop();
                     // Get Target Location
                     float3 targetLocation;
-                    if ((ant.flags & AntFlags.HasPickUp) == AntFlags.HasPickUp)
+                    if (hasPickedUp)
                     {
                         var targetsFromEntity =  GetBufferFromEntity<DropDownEntityElement>(true);
                         if (targetsFromEntity.HasComponent(executionData.storageEntity))
@@ -68,8 +71,6 @@ public partial class AntMovementSystem : SystemBase
                     mass.GetImpulseFromForce(dir, ForceMode.Force, in deltaTime, out var impulse, out var massImpulse);
                     vel.ApplyLinearImpulse(in massImpulse, in impulse);
                     vel.ApplyAngularImpulse(in mass, 5f*deltaTime*math.up()*meth.SignedAngle(ltw.Forward, dir, math.up()));
-                    break;
-                case ColonyExecutionType.AntStopOrGo:
                     break;
             }
         }).ScheduleParallel();

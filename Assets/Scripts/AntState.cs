@@ -1,24 +1,40 @@
 ﻿using System;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 
 [GenerateAuthoringComponent]
 public struct AntState : IComponentData
 {
-    public uint id;
-    public int executionLine;
-    public AntFlags flags;
+    public short id;
+    public byte executionLine;
 }
 
-[Flags]
-public enum AntFlags
+[GenerateAuthoringComponent]
+public struct AntStack : IComponentData
 {
-    HasPickUp = 1,
-    HasFood = 2,
-}
+    long m_Stack;
+    short m_StackPtr;
+    public AntStack(long stack, short stackPtr)
+    {
+        m_Stack = stack;
+        m_StackPtr = stackPtr;
+    }
 
-/// Entry 0: AntMoveTo, (Entry 1, Entry 2, Entry 3)
-/// Entry 1: AntMoveTo, (Entry 0)
-/// Entry 2: Stop
-/// Entry 3: Stop
+    public bool Pop()
+    {
+        var bit = 1L << m_StackPtr;
+        m_StackPtr--;
+        return bit == (m_Stack&bit);
+    }
+    
+    public bool Peek()
+    {
+        var bit = 1L << m_StackPtr;
+        return bit == (m_Stack&bit);
+    }
+    
+    public void Push(bool val)
+    {
+        m_Stack |= 1L << m_StackPtr;
+        m_StackPtr++;
+    }
+}

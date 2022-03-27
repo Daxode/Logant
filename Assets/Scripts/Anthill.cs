@@ -13,7 +13,7 @@ public class Anthill : MonoBehaviour, IConvertGameObjectToEntity, IDeclareRefere
     [SerializeField]
     GameObject antPrefab;
     [SerializeField]
-    uint numberOfAnts;
+    short numberOfAnts;
 
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
@@ -34,8 +34,8 @@ public struct AntPrefab : IComponentData
 
 public struct AnthillData : IComponentData
 {
-    public uint numberOfAnts;
-    public uint numberOfAntsSpawned;
+    public short numberOfAnts;
+    public short numberOfAntsSpawned;
     public Random random;
 }
 
@@ -50,19 +50,19 @@ public partial class AnthillSpawnSystem : SystemBase
         // {
             Entities.ForEach((ref AnthillData data, in Translation translation, in AntPrefab ant) =>
             {
-                const int BatchCount = 5;
-                if (data.numberOfAnts >= data.numberOfAntsSpawned+BatchCount)
+                const short batchCount = 5;
+                if (data.numberOfAnts >= data.numberOfAntsSpawned+batchCount)
                 {
-                    var spawnedAnts = EntityManager.Instantiate(ant.prefab, BatchCount, Allocator.Temp);
-                    for (uint i = 0; i < BatchCount; i++)
+                    var spawnedAnts = EntityManager.Instantiate(ant.prefab, batchCount, Allocator.Temp);
+                    for (short i = 0; i < batchCount; i++)
                     {
                         var direction = data.random.NextFloat2Direction();
                         var magnitude = data.random.NextFloat();
                         var flatOffset = direction * magnitude * 0.5f;
-                        SetComponent(spawnedAnts[(int) i], new Translation {Value = translation.Value + new float3(flatOffset.x, 0, flatOffset.y)});
-                        SetComponent(spawnedAnts[(int) i], new AntState {id = data.numberOfAntsSpawned+i});
+                        SetComponent(spawnedAnts[i], new Translation {Value = translation.Value + new float3(flatOffset.x, 0, flatOffset.y)});
+                        SetComponent(spawnedAnts[i], new AntState {id = (short) (data.numberOfAntsSpawned+i)});
                     }
-                    data.numberOfAntsSpawned+=BatchCount;
+                    data.numberOfAntsSpawned += batchCount;
                     spawnedAnts.Dispose();
                 }
             }).WithStructuralChanges().Run();

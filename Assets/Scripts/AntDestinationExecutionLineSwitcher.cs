@@ -5,7 +5,7 @@ using Unity.Entities;
 using Unity.Physics;
 using Unity.Physics.Systems;
 
-//[UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+[UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 public partial class AntDestinationExecutionLineSwitcher : SystemBase
 {
     StepPhysicsWorld PhysicsWorld;
@@ -17,7 +17,6 @@ public partial class AntDestinationExecutionLineSwitcher : SystemBase
         var antDestJob = new AntDestinationTriggerJob
         {
             lineFromEntity = GetComponentDataFromEntity<ExecutionLine>(true),
-            foodFromEntity = GetComponentDataFromEntity<FoodLeft>(),
             antStateFromEntity = GetComponentDataFromEntity<AntState>()
         };
         Dependency = antDestJob.Schedule(PhysicsWorld.Simulation, Dependency);
@@ -26,7 +25,6 @@ public partial class AntDestinationExecutionLineSwitcher : SystemBase
     struct AntDestinationTriggerJob : ITriggerEventsJob
     {
         [ReadOnly] public ComponentDataFromEntity<ExecutionLine> lineFromEntity;
-        public ComponentDataFromEntity<FoodLeft> foodFromEntity;
         public ComponentDataFromEntity<AntState> antStateFromEntity;
 
         public void Execute(TriggerEvent triggerEvent)
@@ -42,17 +40,7 @@ public partial class AntDestinationExecutionLineSwitcher : SystemBase
         void SetLine(Entity ant, Entity location)
         {
             var antState = antStateFromEntity[ant];
-            antState.executionLine = lineFromEntity[location].line;
-            if (foodFromEntity.HasComponent(location))
-            {
-                var foodLeft = foodFromEntity[location];
-                if (foodLeft.Left > 0 && (antState.flags&AntFlags.HasFood) != AntFlags.HasFood)
-                {
-                    foodLeft.Left--;
-                    foodFromEntity[location] = foodLeft;
-                    antState.flags |= AntFlags.HasPickUp | AntFlags.HasFood;
-                }
-            }
+            antState.executionLine++;
             antStateFromEntity[ant] = antState;
         }
     }

@@ -4,10 +4,17 @@ using UnityEngine;
 
 public enum ColonyExecutionType
 {
+    // Conventional
     GoTo,
     Stop,
+    Push,
+    
+    
+    // Exotic
+    GoToOnTrue,
+
+    // Ant Behaviour
     AntMoveTo,
-    AntStopOrGo
 }
 
 [InternalBufferCapacity(32)]
@@ -24,6 +31,8 @@ public struct ColonyExecutionData : IBufferElementData
 }
 
 public struct ColonyExecutionDataStorageTag : IComponentData {}
+
+// Used by MoveToAnt.
 
 [InternalBufferCapacity(8)]
 public struct PickUpEntityElement : IBufferElementData
