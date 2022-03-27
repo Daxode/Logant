@@ -5,7 +5,7 @@ using Unity.Entities;
 using Unity.Physics;
 using Unity.Physics.Systems;
 
-[UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+//[UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 public partial class AntDestinationExecutionLineSwitcher : SystemBase
 {
     StepPhysicsWorld PhysicsWorld;
@@ -36,8 +36,6 @@ public partial class AntDestinationExecutionLineSwitcher : SystemBase
 
             if (antStateFromEntity.HasComponent(entityA) && lineFromEntity.HasComponent(entityB))
                 SetLine(entityA, entityB);
-            else if (lineFromEntity.HasComponent(entityA) && antStateFromEntity.HasComponent(entityB))
-                SetLine(entityB, entityA);
 
         }
         
@@ -48,9 +46,12 @@ public partial class AntDestinationExecutionLineSwitcher : SystemBase
             if (foodFromEntity.HasComponent(location))
             {
                 var foodLeft = foodFromEntity[location];
-                foodLeft.Left--;
-                foodFromEntity[location] = foodLeft;
-                antState.flags |= AntFlags.HasPickUp | AntFlags.HasFood;
+                if (foodLeft.Left > 0 && (antState.flags&AntFlags.HasFood) != AntFlags.HasFood)
+                {
+                    foodLeft.Left--;
+                    foodFromEntity[location] = foodLeft;
+                    antState.flags |= AntFlags.HasPickUp | AntFlags.HasFood;
+                }
             }
             antStateFromEntity[ant] = antState;
         }

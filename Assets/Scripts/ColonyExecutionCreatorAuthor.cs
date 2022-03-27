@@ -54,6 +54,7 @@ public partial class SpawnExecutionSystem : SystemBase
         var lakeStorage = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
         var lakeStoragePickBuffer = EntityManager.AddBuffer<PickUpEntityElement>(lakeStorage);
         lakeStoragePickBuffer.Add(FoodEntity);
+        lakeStoragePickBuffer.Add(ButtonEntity);
         var lakeStorageDropBuffer = EntityManager.AddBuffer<DropDownEntityElement>(lakeStorage);
         lakeStorageDropBuffer.Add(HomeEntity);
         
@@ -67,8 +68,9 @@ public partial class SpawnExecutionSystem : SystemBase
 
         // Entry Food
         var foodStorage = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
+        var foodStoragePickBuffer = EntityManager.AddBuffer<PickUpEntityElement>(foodStorage);
+        foodStoragePickBuffer.Add(HomeEntity);
         var foodStorageDropBuffer = EntityManager.AddBuffer<DropDownEntityElement>(foodStorage);
-        foodStorageDropBuffer.Add(HomeEntity);
         foodStorageDropBuffer.Add(ButtonEntity);
 
         // Add to Execution Buffer

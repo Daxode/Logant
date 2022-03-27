@@ -67,7 +67,7 @@ public partial class AntMovementSystem : SystemBase
                     // Apply Velocity
                     mass.GetImpulseFromForce(dir, ForceMode.Force, in deltaTime, out var impulse, out var massImpulse);
                     vel.ApplyLinearImpulse(in massImpulse, in impulse);
-                    vel.ApplyAngularImpulse(in mass, 10f*deltaTime*math.up()*meth.SignedAngle(ltw.Forward, dir, math.up()));
+                    vel.ApplyAngularImpulse(in mass, 5f*deltaTime*math.up()*meth.SignedAngle(ltw.Forward, dir, math.up()));
                     break;
                 case ColonyExecutionType.AntStopOrGo:
                     break;

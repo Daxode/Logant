@@ -1,4 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="/Assets/UI Toolkit/UI/Node.uss" />
-    <ui:Button text="Button" display-tooltip-when-elided="true" class="Switch idk" style="min-height: 5%; min-width: auto; flex-direction: column-reverse; justify-content: flex-end; position: absolute; height: 40px; width: 100%; -unity-font-definition: url(&apos;/Assets/Settings/COMIC SDF.asset&apos;);" />
+    <ui:Button text="Button" display-tooltip-when-elided="true" class="Switch idk" style="min-height: 5%; min-width: auto; flex-direction: column-reverse; justify-content: center; height: 40px; width: 98%; -unity-font-definition: url(&apos;/Assets/Settings/COMIC SDF.asset&apos;); margin-left: 1%; margin-right: 1%; margin-bottom: 1%; margin-top: 1%; align-items: center; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
+    <ui:Label text="Label" display-tooltip-when-elided="true" class="Label" style="-unity-font: url(&apos;/Assets/Settings/COMIC.TTF&apos;); -unity-font-definition: url(&apos;/Assets/Settings/COMIC SDF.asset&apos;); font-size: 24px; -unity-font-style: bold;" />
 </ui:UXML>

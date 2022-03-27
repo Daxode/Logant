@@ -50,8 +50,8 @@ public partial class AnthillSpawnSystem : SystemBase
         // {
             Entities.ForEach((ref AnthillData data, in Translation translation, in AntPrefab ant) =>
             {
-                const int BatchCount = 1;
-                if (data.numberOfAnts > data.numberOfAntsSpawned+BatchCount)
+                const int BatchCount = 5;
+                if (data.numberOfAnts >= data.numberOfAntsSpawned+BatchCount)
                 {
                     var spawnedAnts = EntityManager.Instantiate(ant.prefab, BatchCount, Allocator.Temp);
                     for (uint i = 0; i < BatchCount; i++)
