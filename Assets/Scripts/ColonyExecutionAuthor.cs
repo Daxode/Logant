@@ -4,48 +4,24 @@ using UnityEngine;
 
 public enum ColonyExecutionType
 {
-    // Conventional
-    GoTo,
-    Stop,
-    Push,
-    
-    
-    // Exotic
-    GoToOnTrue,
+    // ------------------ Conventional -------------------
+    GoTo,       // Goes to ExecutionLine
+    GoToTrue,   // Goes to ExecutionLine if register true
+    Exit,       // Exits Execution
+    Set,        // Sets value to true on register;
+    Copy,       // Copy register 1 from register 0;
 
-    // Ant Behaviour
-    AntMoveTo,
+
+    // --------------------- Exotic -----------------------
+    GoToRandom, // Go to random ExecutionLine from buffer
+
+    // --------------------- Ant Behaviour ----------------
+    AntMoveTo, // Moves Ant to Translation
 }
 
-[InternalBufferCapacity(32)]
+[InternalBufferCapacity(128)]
 public struct ColonyExecutionData : IBufferElementData
 {
     public ColonyExecutionType type;
     public Entity storageEntity; // Entity containing data relevant to do the type task. E.g. AntMoveTo. requires EntityBuffer present on this entity.
-
-    public ColonyExecutionData(ColonyExecutionType type, Entity storageEntity = new Entity())
-    {
-        this.type = type;
-        this.storageEntity = storageEntity;
-    }
-}
-
-public struct ColonyExecutionDataStorageTag : IComponentData {}
-
-// Used by MoveToAnt.
-
-[InternalBufferCapacity(8)]
-public struct PickUpEntityElement : IBufferElementData
-{
-    public Entity m_E;
-    public static implicit operator PickUpEntityElement(Entity e) => new PickUpEntityElement {m_E = e};
-    public static implicit operator Entity(PickUpEntityElement elem) => elem.m_E;
-}
-
-[InternalBufferCapacity(8)]
-public struct DropDownEntityElement : IBufferElementData
-{
-    public Entity m_E;
-    public static implicit operator DropDownEntityElement(Entity e) => new DropDownEntityElement {m_E = e};
-    public static implicit operator Entity(DropDownEntityElement elem) => elem.m_E;
 }

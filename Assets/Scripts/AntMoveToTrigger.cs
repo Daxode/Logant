@@ -6,7 +6,7 @@ using Unity.Physics;
 using Unity.Physics.Systems;
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-public partial class AntDestinationExecutionLineSwitcher : SystemBase
+public partial class AntMoveToTrigger : SystemBase
 {
     StepPhysicsWorld PhysicsWorld;
     
@@ -16,7 +16,7 @@ public partial class AntDestinationExecutionLineSwitcher : SystemBase
     {
         var antDestJob = new AntDestinationTriggerJob
         {
-            lineFromEntity = GetComponentDataFromEntity<ExecutionLine>(true),
+            indexFromEntity = GetComponentDataFromEntity<RegisterIndex>(true),
             antStateFromEntity = GetComponentDataFromEntity<AntState>()
         };
         Dependency = antDestJob.Schedule(PhysicsWorld.Simulation, Dependency);
@@ -24,7 +24,7 @@ public partial class AntDestinationExecutionLineSwitcher : SystemBase
 
     struct AntDestinationTriggerJob : ITriggerEventsJob
     {
-        [ReadOnly] public ComponentDataFromEntity<ExecutionLine> lineFromEntity;
+        [ReadOnly] public ComponentDataFromEntity<RegisterIndex> indexFromEntity;
         public ComponentDataFromEntity<AntState> antStateFromEntity;
 
         public void Execute(TriggerEvent triggerEvent)
@@ -32,16 +32,13 @@ public partial class AntDestinationExecutionLineSwitcher : SystemBase
             var entityA = triggerEvent.EntityA;
             var entityB = triggerEvent.EntityB;
 
-            if (antStateFromEntity.HasComponent(entityA) && lineFromEntity.HasComponent(entityB))
-                SetLine(entityA, entityB);
+            if (antStateFromEntity.HasComponent(entityA) && indexFromEntity.HasComponent(entityB))
+            {
+                var antState = antStateFromEntity[entityA];
+                antState.executionLine++;
+                antStateFromEntity[entityA] = antState;
+            }
 
-        }
-        
-        void SetLine(Entity ant, Entity location)
-        {
-            var antState = antStateFromEntity[ant];
-            antState.executionLine++;
-            antStateFromEntity[ant] = antState;
         }
     }
 }

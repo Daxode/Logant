@@ -33,8 +33,8 @@ public partial class SpawnExecutionSystem : SystemBase
 {
     /// Entry 0: AntMoveTo, (Entry 1, Entry 2, Entry 3)
     /// Entry 1: AntMoveTo, (Entry 0)
-    /// Entry 2: Stop
-    /// Entry 3: Stop
+    /// Entry 2: Exit
+    /// Entry 3: Exit
     protected override void OnStartRunning()
     {
         var ColonyExecutionCreator = GetSingletonEntity<ColonyExecutionCreatorTag>();
@@ -45,46 +45,23 @@ public partial class SpawnExecutionSystem : SystemBase
         Entity LakeEntity = points[3];
 
         // Entry Home
-        var homeStorage = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
-        var storage0PickBuffer = EntityManager.AddBuffer<PickUpEntityElement>(homeStorage);
-        storage0PickBuffer.Add(LakeEntity);
-        storage0PickBuffer.Add(ButtonEntity);
-        
+        var homeStorage = EntityManager.CreateEntity();
+
         // Entry Lake
-        var lakeStorage = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
-        var lakeStoragePickBuffer = EntityManager.AddBuffer<PickUpEntityElement>(lakeStorage);
-        lakeStoragePickBuffer.Add(FoodEntity);
-        lakeStoragePickBuffer.Add(ButtonEntity);
-        var lakeStorageDropBuffer = EntityManager.AddBuffer<DropDownEntityElement>(lakeStorage);
-        lakeStorageDropBuffer.Add(HomeEntity);
-        
+        var lakeStorage = EntityManager.CreateEntity();
+
         // Entry Button
-        var buttonStorage = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
-        var buttonStoragePickBuffer = EntityManager.AddBuffer<PickUpEntityElement>(buttonStorage);
-        buttonStoragePickBuffer.Add(FoodEntity);
-        var buttonStorageDropBuffer = EntityManager.AddBuffer<DropDownEntityElement>(buttonStorage);
-        buttonStorageDropBuffer.Add(HomeEntity);
-        buttonStorageDropBuffer.Add(LakeEntity);
+        var buttonStorage = EntityManager.CreateEntity();
 
         // Entry Food
-        var foodStorage = EntityManager.CreateEntity(typeof(ColonyExecutionDataStorageTag));
-        var foodStoragePickBuffer = EntityManager.AddBuffer<PickUpEntityElement>(foodStorage);
-        foodStoragePickBuffer.Add(HomeEntity);
-        var foodStorageDropBuffer = EntityManager.AddBuffer<DropDownEntityElement>(foodStorage);
-        foodStorageDropBuffer.Add(ButtonEntity);
+        var foodStorage = EntityManager.CreateEntity();
+
 
         // Add to Execution Buffer
         var ColonyExecution = EntityManager.CreateEntity();
         EntityManager.SetName(ColonyExecution, "Colony Execution");
         var executionDataBuffer = EntityManager.AddBuffer<ColonyExecutionData>(ColonyExecution);
-        SetComponent(HomeEntity, new ExecutionLine{line = 0});
-        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.AntMoveTo, homeStorage));
-        SetComponent(LakeEntity, new ExecutionLine{line = 1});
-        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.AntMoveTo, lakeStorage));
-        SetComponent(ButtonEntity, new ExecutionLine{line = 2});
-        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.AntMoveTo, buttonStorage));
-        SetComponent(FoodEntity, new ExecutionLine{line = 3});
-        executionDataBuffer.Add(new ColonyExecutionData(ColonyExecutionType.AntMoveTo, foodStorage));
+        
     }
 
     protected override void OnUpdate() {}

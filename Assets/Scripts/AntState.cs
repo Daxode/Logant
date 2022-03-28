@@ -1,40 +1,87 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using Unity.Burst;
+using Unity.Burst.Intrinsics;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
+using Unity.Serialization.Json;
+using UnityEngine;
 
 [GenerateAuthoringComponent]
 public struct AntState : IComponentData
 {
     public short id;
-    public byte executionLine;
+    public short executionLine;
 }
 
 [GenerateAuthoringComponent]
-public struct AntStack : IComponentData
+public struct AntRegisters : IComponentData
 {
-    long m_Stack;
-    short m_StackPtr;
-    public AntStack(long stack, short stackPtr)
+    v128 Registers; //32 1-bit registers
+    
+    [BurstCompile]
+    bool Read(byte index)
     {
-        m_Stack = stack;
-        m_StackPtr = stackPtr;
-    }
+        // if (X86.Sse2.IsSse2Supported)
+        // {
+        //     var bit = X86.Sse2.shu(new v128(1), index); // bit = 1 << index
+        //     return X86.Sse2.and_si128() // return bit == Registers & bit
+        // } else if (Arm.Neon.IsNeonSupported)
+        // {
+        // }
+        // else throw new InvalidOperationException("Couldn't find valid CPU architecture!");
 
-    public bool Pop()
-    {
-        var bit = 1L << m_StackPtr;
-        m_StackPtr--;
-        return bit == (m_Stack&bit);
+        if (index > 64)
+        {
+            var bit = 1Ul << (index-64);
+            return bit == (Registers.ULong1 & bit);
+        }
+        else
+        {
+            var bit = 1Ul << index;
+            return bit == (Registers.ULong0 & bit);
+        }
     }
     
-    public bool Peek()
+    public bool this[byte i] => Read(i);
+
+    [BurstCompile]
+    public void Set(byte index)
     {
-        var bit = 1L << m_StackPtr;
-        return bit == (m_Stack&bit);
+        if (index > 64)
+            Registers.ULong1 |= 1Ul << (index - 64);
+        else
+            Registers.ULong0 |= 1Ul << index;
     }
     
-    public void Push(bool val)
+    [BurstCompile]
+    public void Write(byte index, bool val)
     {
-        m_Stack |= 1L << m_StackPtr;
-        m_StackPtr++;
+        if (index > 64)
+            Registers.ULong1 = val 
+                ? Registers.ULong1 |  (1Ul << index-64) 
+                : Registers.ULong1 &~ (1Ul << index-64);
+        else
+            Registers.ULong0 = val 
+                ? Registers.ULong0 |  (1Ul << index) 
+                : Registers.ULong0 &~ (1Ul << index);
+    }
+}
+
+public struct RegisterIndex : IComponentData
+{
+    byte m_Index;
+    public static implicit operator RegisterIndex(byte i) => new RegisterIndex {m_Index = i};
+    public static implicit operator byte(RegisterIndex elem) => elem.m_Index;
+}
+
+public struct CopyIndex : IComponentData
+{
+    public byte From;
+    public byte To;
+    public CopyIndex(byte from, byte to)
+    {
+        From = from;
+        To = to;
     }
 }
