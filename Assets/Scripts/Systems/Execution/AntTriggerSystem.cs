@@ -74,35 +74,15 @@ namespace Systems.Execution
                             case ExecutionType.AntMoveTo:
                                 break;
                             case ExecutionType.AntPickUp:
-                                // RW
                                 var resourceStore = resourceStoreFromEntity[line.ePtr];
                                 var registers = registersFromEntity[entityA];
                                 if (resourceStore.Left > 0)
                                 {
-                                    // RO
                                     var readIndex = indexFromEntity[line.ePtr];
-                                
-                                    //
                                     const byte count = 4;
-                                    uint slot;
-                                    byte index=readIndex;
-                                    // do
-                                    // {
-                                    //     slot = registers.Read(index, count);
-                                    //     if (slot == 0)
-                                    //     {
-                                    //         registers.Write(index, (uint) resourceStore.Type, count);
-                                    //         registers.Write((byte)(index+count*2), true);
-                                    //         resourceStore.Left--;
-                                    //         registersFromEntity[line.ePtr] = registers;
-                                    //         resourceStoreFromEntity[line.ePtr] = resourceStore;
-                                    //     }
-                                    //     index += count;
-                                    // } while (slot!=0);
-                                    
                                     if (registers.Read(readIndex, count) == 0) {
-                                        registers.Write(index, (uint) resourceStore.Type, count);
-                                        registers.Write((byte)(index+count*2), true);
+                                        registers.Write(readIndex, (uint) resourceStore.Type, count);
+                                        registers.Write((byte)(readIndex+count*2), true);
                                         resourceStore.Left--;
                                         registersFromEntity[line.ePtr] = registers;
                                         resourceStoreFromEntity[line.ePtr] = resourceStore;
