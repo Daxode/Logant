@@ -1,11 +1,11 @@
 ﻿using Unity.Entities;
 
 [GenerateAuthoringComponent]
-public struct FoodLeft : IComponentData
+public struct FoodStore : IComponentData
 {
     public int Left;
     public int Total;
-    public FoodLeft(int total, int left)
+    public FoodStore(int total, int left)
     {
         Total = total;
         Left = left;
