@@ -1,3 +1,4 @@
+using Data;
 using Unity.Burst;
 using Unity.Collections;
 using UnityEngine;
@@ -17,7 +18,7 @@ public partial class AntMoveToTrigger : SystemBase
         var antDestJob = new AntDestinationTriggerJob
         {
             indexFromEntity = GetComponentDataFromEntity<RegisterIndex>(true),
-            antStateFromEntity = GetComponentDataFromEntity<AntState>()
+            antStateFromEntity = GetComponentDataFromEntity<ExecutionState>()
         };
         Dependency = antDestJob.Schedule(PhysicsWorld.Simulation, Dependency);
     }
@@ -25,7 +26,7 @@ public partial class AntMoveToTrigger : SystemBase
     struct AntDestinationTriggerJob : ITriggerEventsJob
     {
         [ReadOnly] public ComponentDataFromEntity<RegisterIndex> indexFromEntity;
-        public ComponentDataFromEntity<AntState> antStateFromEntity;
+        public ComponentDataFromEntity<ExecutionState> antStateFromEntity;
 
         public void Execute(TriggerEvent triggerEvent)
         {

@@ -60,7 +60,7 @@ public partial class SpawnExecutionSystem : SystemBase
         // Add to Execution Buffer
         var ColonyExecution = EntityManager.CreateEntity();
         EntityManager.SetName(ColonyExecution, "Colony Execution");
-        var executionDataBuffer = EntityManager.AddBuffer<ColonyExecutionData>(ColonyExecution);
+        var executionDataBuffer = EntityManager.AddBuffer<ExecutionLine>(ColonyExecution);
         
     }
 
