@@ -4,15 +4,14 @@ using Unity.Entities;
 
 namespace Data
 {
-    [GenerateAuthoringComponent]
     public struct Registers : IComponentData
     {
         /// <summary>
-        /// 32x 1-bit registers
+        /// 128x 1-bit registers
         /// </summary>
         v128 m_Registers;
     
-        [BurstCompile]
+        
         bool Read(byte index)
         {
             // if (X86.Sse2.IsSse2Supported)
@@ -35,19 +34,36 @@ namespace Data
                 return bit == (m_Registers.ULong0 & bit);
             }
         }
+        
+        public uint Read(byte index, byte count)
+        {
+            var reg = new Registers();
+            for (byte writeIndex = 0; writeIndex < count; writeIndex++) 
+                reg.Write(writeIndex, Read((byte)(count+writeIndex)));
+            return reg.m_Registers.UInt0;
+        }
+        
+        public void Write(byte index, uint val, byte count)
+        {
+            var reg = new Registers();
+            reg.m_Registers.UInt0 = val;
+            for (byte readIndex = 0; readIndex < count; readIndex++) 
+                Write((byte)(index+readIndex), reg.Read(readIndex));
+        }
     
         public bool this[byte i] => Read(i);
     
-        [BurstCompile]
-        public void Enable(byte index)
+        
+        public void Set(byte index)
         {
-            if (index > 64)
-                m_Registers.ULong1 |= 1Ul << (index - 64);
-            else
+            if (index > 64) {
+                m_Registers.ULong1 |= 1Ul << (index - 64);   
+            } else {
                 m_Registers.ULong0 |= 1Ul << index;
+            }
         }
     
-        [BurstCompile]
+        
         public void Write(byte index, bool val)
         {
             if (index > 64)
@@ -64,10 +80,21 @@ namespace Data
     public struct RegisterIndex : IComponentData
     {
         byte m_Index;
+
+        public RegisterIndex(byte index) => m_Index = index;
         public static implicit operator RegisterIndex(byte i) => new RegisterIndex {m_Index = i};
         public static implicit operator byte(RegisterIndex elem) => elem.m_Index;
     }
     
+    [InternalBufferCapacity(2)]
+    public struct RegisterIndexElement : IBufferElementData
+    {
+        byte m_Index;
+        public RegisterIndexElement(byte index) => m_Index = index;
+        public static implicit operator RegisterIndexElement(byte i) => new RegisterIndexElement {m_Index = i};
+        public static implicit operator byte(RegisterIndexElement elem) => elem.m_Index;
+    }
+
     public struct CopyIndex : IComponentData
     {
         public byte From;
@@ -78,5 +105,14 @@ namespace Data
             From = from;
             To = to;
         }
+    }
+    
+    public struct Count : IComponentData
+    {
+        byte m_Count;
+
+        public Count(byte count) => m_Count = count;
+        public static implicit operator Count(byte count) => new Count(count);
+        public static implicit operator byte(Count elem) => elem.m_Count;
     }
 }

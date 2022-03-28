@@ -10,8 +10,7 @@ namespace Data
 
     public struct AntHillData : IComponentData
     {
-        public short numberOfAnts;
-        public short numberOfAntsSpawned;
-        public Random random;
+        public ushort numberOfAnts;
+        public ushort numberOfAntsSpawned;
     }
 }

@@ -13,11 +13,12 @@ namespace Systems
     public class AntHill : MonoBehaviour, IConvertGameObjectToEntity, IDeclareReferencedPrefabs
     {
         [SerializeField] GameObject antPrefab;
-        [SerializeField] short numberOfAnts;
+        [SerializeField] ushort numberOfAnts;
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
             dstManager.AddComponentData(entity, new AntPrefab {prefab = conversionSystem.GetPrimaryEntity(antPrefab)});
-            dstManager.AddComponentData(entity, new AntHillData {numberOfAnts = numberOfAnts, random = new Random(100)});
+            dstManager.AddComponentData(entity, new AntHillData {numberOfAnts = numberOfAnts});
+            dstManager.AddComponentData(entity, new RandomHolder(417));
         }
         public void DeclareReferencedPrefabs(List<GameObject> referencedPrefabs) => referencedPrefabs.Add(antPrefab);
     }
@@ -30,19 +31,21 @@ namespace Systems
         {
             if (m_SpawnTimeLeft < 0)
             {
-                Entities.ForEach((ref AntHillData data, in Translation translation, in AntPrefab ant) =>
+                Entities.ForEach((ref AntHillData data, ref RandomHolder randomHolder, in Translation translation, in AntPrefab ant) =>
                 {
-                    const short batchCount = 1;
+                    const ushort batchCount = 1;
                     if (data.numberOfAnts >= data.numberOfAntsSpawned + batchCount)
                     {
                         var spawnedAnts = EntityManager.Instantiate(ant.prefab, batchCount, Allocator.Temp);
-                        for (short i = 0; i < batchCount; i++)
+                        for (ushort i = 0; i < batchCount; i++)
                         {
-                            var direction = data.random.NextFloat2Direction();
-                            var magnitude = data.random.NextFloat();
+                            var direction = randomHolder.rnd.NextFloat2Direction();
+                            var magnitude = randomHolder.rnd.NextFloat();
                             var flatOffset = direction * magnitude * 0.5f;
                             SetComponent(spawnedAnts[i], new Translation {Value = translation.Value + new float3(flatOffset.x, 0, flatOffset.y)});
-                            SetComponent(spawnedAnts[i], new ExecutionState {id = (short) (data.numberOfAntsSpawned + i)});
+                            var id = (ushort) (data.numberOfAntsSpawned + i);
+                            SetComponent(spawnedAnts[i], new ExecutionState {id = id});
+                            SetComponent(spawnedAnts[i], new RandomHolder(id));
                         }
 
                         data.numberOfAntsSpawned += batchCount;

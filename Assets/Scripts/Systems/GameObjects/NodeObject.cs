@@ -2,5 +2,5 @@
 
 namespace Systems.GameObjects
 {
-    public class Node : MonoBehaviour {}
+    public class NodeObject : MonoBehaviour {}
 }

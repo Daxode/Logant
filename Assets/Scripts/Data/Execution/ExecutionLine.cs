@@ -2,34 +2,46 @@
 using Unity.Entities;
 using UnityEngine;
 
-public enum ColonyExecutionType
+public enum ExecutionType
 {
     // ------------------ Conventional -------------------
     GoTo,       // Goes to ExecutionLineIndex
     GoToTrue,   // Goes to ExecutionLineIndex if register true
     Exit,       // Exits Execution
-    Set,        // Sets value to true on register;
-    Copy,       // Copy register 1 from register 0;
-
+    
+    Set,        // Sets register to true;
+    Copy,       // Copy register[1] from register[0];
+    CmpLT,      // Sets register[2] to true if register[0]:Count is less than register[1]:Count
 
     // --------------------- Exotic -----------------------
     GoToRandom, // Go to random ExecutionLineIndex from buffer
 
     // --------------------- Ant Behaviour ----------------
     AntMoveTo, // Moves Ant to Translation
+    AntDestroy,// Destroys Ant
+    AntPickUp, // PickUp resource at ResourceStore, using RegisterIndex of bit-count 9 [4-4-1]
 }
 
 [InternalBufferCapacity(128)]
 public struct ExecutionLine : IBufferElementData
 {
-    public ColonyExecutionType type;
-    public Entity storageEntity; // Entity containing data relevant to do the type task. E.g. AntMoveTo. requires EntityBuffer present on this entity.
+    public ExecutionType type;
+    public Entity ePtr; // Entity containing data relevant to do the type task. E.g. AntMoveTo. requires EntityBuffer present on this entity.
+
+    ExecutionLine(ExecutionType type, Entity ePtr = new Entity())
+    {
+        this.type = type;
+        this.ePtr = ePtr;
+    }
+
+    public static implicit operator ExecutionLine(ExecutionType type) => new ExecutionLine(type);
+    public static implicit operator ExecutionLine((ExecutionType type, Entity e)t) => new ExecutionLine(t.type, t.e);
 }
 
-[GenerateAuthoringComponent]
 public struct ExecutionLineIndex : IComponentData
 {
     short m_Line;
+    public ExecutionLineIndex(short line) => m_Line = line;
     public static implicit operator ExecutionLineIndex(short s) => new ExecutionLineIndex {m_Line = s};
     public static implicit operator short(ExecutionLineIndex executionLineIndex) => executionLineIndex.m_Line;
 }

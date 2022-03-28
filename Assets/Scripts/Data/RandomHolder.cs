@@ -3,11 +3,11 @@ using Unity.Mathematics;
 
 namespace Data
 {
-    public struct RandomKeeper : IComponentData
+    public struct RandomHolder : IComponentData
     {
-        Random m_Rnd;
-        public RandomKeeper(uint seed) => m_Rnd = new Random(seed);
-        public static implicit operator RandomKeeper(Random r) => new RandomKeeper(r.state);
-        public static implicit operator Random(RandomKeeper k) => k.m_Rnd;
+        public Random rnd;
+        public RandomHolder(uint seed) => rnd = new Random(seed);
+        public static implicit operator RandomHolder(Random r) => new RandomHolder(r.state);
+        public static implicit operator Random(RandomHolder k) => k.rnd;
     }
 }

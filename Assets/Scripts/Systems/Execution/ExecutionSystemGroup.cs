@@ -9,7 +9,6 @@ namespace Systems.Execution
         protected override void OnUpdate()
         {
             base.OnUpdate();
-            base.OnUpdate();
         }
     }
 }

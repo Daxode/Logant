@@ -2,9 +2,8 @@
 using Unity.Entities;
 using UnityEngine;
 
-[GenerateAuthoringComponent]
 public struct ExecutionState : IComponentData
 {
-    public short id;
-    public short executionLine;
+    public ushort id;
+    public ushort executionLine;
 }

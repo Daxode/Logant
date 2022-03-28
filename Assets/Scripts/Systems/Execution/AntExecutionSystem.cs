@@ -1,4 +1,7 @@
 ﻿using System;
+using Data;
+using Systems.Execution;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
@@ -8,28 +11,34 @@ using Random = Unity.Mathematics.Random;
 
 namespace Systems
 {
-    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-    public class AntExecutionSystem : SystemBase
+    [UpdateInGroup(typeof(ExecutionSystemGroup))]
+    public partial class AntExecutionSystem : SystemBase
     {
+        EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;
+        protected override void OnCreate() => World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
+
         protected override void OnUpdate()
         {
-            var colonyExecutionEntity = GetSingletonEntity<ExecutionLine>();
-            var colonyExecutionDataBuffer = GetBuffer<ExecutionLine>(colonyExecutionEntity, true);
+            var executionEntity = GetSingletonEntity<ExecutionLine>();
+            var executionLines = GetBuffer<ExecutionLine>(executionEntity, true);
+            var ecb = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
             
             var deltaTime = Time.DeltaTime;
-            Entities.ForEach((ref ExecutionState state, 
+            Entities.WithReadOnly(executionLines).ForEach((Entity e, int entityInQueryIndex,
+                ref ExecutionState state, 
                 ref PhysicsVelocity vel, in PhysicsMass mass,
                 in LocalToWorld ltw) =>
             {
-                var executionData = colonyExecutionDataBuffer[state.executionLine];
-                var rnd = Random.CreateFromIndex((uint) state.id);
+                var executionData = executionLines[state.executionLine];
 
                 switch (executionData.type)
                 {
                     // Ant Behaviour
-                    case ColonyExecutionType.AntMoveTo:
-                        // Get Target Location
-                        var targetLocation = GetComponent<Translation>(executionData.storageEntity).Value;
+                    case ExecutionType.AntMoveTo:
+                        var rnd = Random.CreateFromIndex(state.id);
+                        
+                        // Get Target NodeObject
+                        var targetLocation = GetComponent<Translation>(executionData.ePtr).Value;
                         var flatDir = rnd.NextFloat2Direction() * rnd.NextFloat() * .5f;
                         targetLocation += new float3(flatDir.x, 0, flatDir.y);
 
@@ -42,8 +51,11 @@ namespace Systems
                         vel.ApplyLinearImpulse(in massImpulse, in impulse);
                         vel.ApplyAngularImpulse(in mass, 5f * deltaTime * math.up() * meth.SignedAngle(ltw.Forward, dir, math.up()));
 
-                        state.executionLine--;
+                        state.executionLine--; // Keeps running the above code until external source increments.
                         break;
+                    case ExecutionType.AntDestroy:
+                        ecb.DestroyEntity(entityInQueryIndex, e);
+                        return;
                     default: return;
                 }
 

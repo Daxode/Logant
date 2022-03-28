@@ -1,11 +1,12 @@
 ﻿using System;
 using Data;
+using Systems.Execution;
 using Unity.Entities;
 using Random = Unity.Mathematics.Random;
 
 namespace Systems
 {
-    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+    [UpdateInGroup(typeof(ExecutionSystemGroup))]
     public partial class ExecutionSystem : SystemBase
     {
         EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;
@@ -13,46 +14,55 @@ namespace Systems
 
         protected override void OnUpdate()
         {
-            var colonyExecutionEntity = GetSingletonEntity<ExecutionLine>();
-            var colonyExecutionDataBuffer = GetBuffer<ExecutionLine>(colonyExecutionEntity, true);
+            var executionEntity = GetSingletonEntity<ExecutionLine>();
+            var executionLines = GetBuffer<ExecutionLine>(executionEntity, true);
             var ecb = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
-            Entities.WithReadOnly(colonyExecutionDataBuffer).ForEach(
-                (Entity e, int entityInQueryIndex, ref ExecutionState state, ref Registers registers) =>                         
+            Entities.WithReadOnly(executionLines).ForEach(
+                (Entity e, int entityInQueryIndex, ref ExecutionState state, ref Registers registers, ref RandomHolder rndHolder) =>                         
                 {
-                    var executionData = colonyExecutionDataBuffer[state.executionLine];
+                    var line = executionLines[state.executionLine];
 
-                    switch (executionData.type)
+                    switch (line.type)
                     {
                         // Control Flow
-                        case ColonyExecutionType.GoTo:
-                            state.executionLine = (short) (GetComponent<ExecutionLineIndex>(executionData.storageEntity) - 1);
+                        case ExecutionType.GoTo:
+                            state.executionLine = (ushort) (GetComponent<ExecutionLineIndex>(line.ePtr) - 1);
                             break;
-                        case ColonyExecutionType.GoToTrue:
-                            var registerIndex = GetComponent<RegisterIndex>(executionData.storageEntity);
+                        case ExecutionType.GoToTrue:
+                            var registerIndex = GetComponent<RegisterIndex>(line.ePtr);
                             state.executionLine = registers[registerIndex]
-                                ? (short) (GetComponent<ExecutionLineIndex>(executionData.storageEntity) - 1)
+                                ? (ushort) (GetComponent<ExecutionLineIndex>(line.ePtr) - 1)
                                 : state.executionLine;
                             break;
-                        case ColonyExecutionType.Exit:
+                        case ExecutionType.Exit:
                             ecb.RemoveComponent<ExecutionState>(entityInQueryIndex, e);
                             break;
 
                         // Data
-                        case ColonyExecutionType.Set:
-                            registers.Enable(GetComponent<RegisterIndex>(executionData.storageEntity));
+                        case ExecutionType.Set:
+                            registers.Set(GetComponent<RegisterIndex>(line.ePtr));
                             break;
-                        case ColonyExecutionType.Copy:
-                            var indexes = GetComponent<CopyIndex>(executionData.storageEntity);
-                            registers.Write(indexes.To, registers[indexes.From]);
+                        case ExecutionType.Copy:
+                            var copyIndexes = GetComponent<CopyIndex>(line.ePtr);
+                            registers.Write(copyIndexes.To, registers[copyIndexes.From]);
+                            break;
+                        case ExecutionType.CmpLT:
+                            var cmpLTIndexes = GetBufferFromEntity<RegisterIndexElement>(true)[line.ePtr];
+                            byte registerA = cmpLTIndexes[0];
+                            byte registerB = cmpLTIndexes[1];
+                            byte count = GetComponent<Count>(line.ePtr);
+                            var valA = registers.Read(registerA, count);
+                            var valB = registers.Read(registerB, count);
+                            byte registerSave = cmpLTIndexes[2];
+                            registers.Write(registerSave, valA<valB);
                             break;
 
                         // Exotic
-                        case ColonyExecutionType.GoToRandom:
+                        case ExecutionType.GoToRandom:
                             var executionLineFromEntity = GetBufferFromEntity<ExecutionLineIndexElement>(true);
-                            var lines = executionLineFromEntity[executionData.storageEntity];
-                            var rnd = Random.CreateFromIndex((uint) state.id);
-                            state.executionLine = (short) (lines[rnd.NextInt(lines.Length)] - 1);
+                            var lines = executionLineFromEntity[line.ePtr];
+                            state.executionLine = (ushort) (lines[rndHolder.rnd.NextInt(lines.Length)] - 1);
                             break;
                         default: return;
                     }
@@ -62,4 +72,12 @@ namespace Systems
             m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
         }
     }
+}
+
+public struct TargetEntity : IComponentData
+{ 
+    Entity m_E;
+    TargetEntity(Entity e) => m_E = e;
+    public static implicit operator TargetEntity(Entity e) => new TargetEntity(e);
+    public static implicit operator Entity(TargetEntity t) => t.m_E;
 }

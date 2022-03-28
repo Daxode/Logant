@@ -583,6 +583,7 @@ GameObject:
   m_Component:
   - component: {fileID: 581053911}
   - component: {fileID: 581053910}
+  - component: {fileID: 581053912}
   m_Layer: 0
   m_Name: GameData
   m_TagString: Untagged
@@ -603,10 +604,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   points:
-  - {fileID: 1828559432}
-  - {fileID: 1384499918}
-  - {fileID: 995778384}
-  - {fileID: 1869777978}
+  - {fileID: 1828559435}
+  - {fileID: 1384499920}
+  - {fileID: 995778389}
+  - {fileID: 1869777983}
+  stub: {fileID: 6571172917048956006, guid: aa6c8ead9e2b94a4e9e5f7df2b7c52db, type: 3}
 --- !u!4 &581053911
 Transform:
   m_ObjectHideFlags: 0
@@ -621,6 +623,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &581053912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 581053909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d75afd5e039497da59d0170ccb0120f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SpawnInterval: 0.1
 --- !u!1 &849646325
 GameObject:
   m_ObjectHideFlags: 0
@@ -708,9 +723,9 @@ GameObject:
   m_Component:
   - component: {fileID: 995778384}
   - component: {fileID: 995778385}
-  - component: {fileID: 995778386}
   - component: {fileID: 995778388}
   - component: {fileID: 995778387}
+  - component: {fileID: 995778389}
   m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
@@ -875,19 +890,6 @@ MonoBehaviour:
         Tag07: 0
     m_SerializedVersion: 1
   m_SerializedVersion: 1
---- !u!114 &995778386
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 995778383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b03bc183199744558bcbc1d2fb96e340, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  line: 0
 --- !u!23 &995778387
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -937,6 +939,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 995778383}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &995778389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995778383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81f621d7d3e34bc7aabda606d162ccb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1043052166
 GameObject:
   m_ObjectHideFlags: 0
@@ -1122,10 +1136,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1384499918}
   - component: {fileID: 1384499919}
-  - component: {fileID: 1384499920}
   - component: {fileID: 1384499922}
   - component: {fileID: 1384499921}
   - component: {fileID: 1384499923}
+  - component: {fileID: 1384499920}
   m_Layer: 0
   m_Name: Food
   m_TagString: Untagged
@@ -1299,10 +1313,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1384499917}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b03bc183199744558bcbc1d2fb96e340, type: 3}
+  m_Script: {fileID: 11500000, guid: 81f621d7d3e34bc7aabda606d162ccb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  line: 0
 --- !u!23 &1384499921
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1377,9 +1390,9 @@ GameObject:
   - component: {fileID: 1828559432}
   - component: {fileID: 1828559433}
   - component: {fileID: 1828559434}
-  - component: {fileID: 1828559435}
   - component: {fileID: 1828559437}
   - component: {fileID: 1828559436}
+  - component: {fileID: 1828559435}
   m_Layer: 0
   m_Name: Home
   m_TagString: Untagged
@@ -1414,7 +1427,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   antPrefab: {fileID: 1163316477580434692, guid: 4090457c2ee90a344bb50a94d6af37b7, type: 3}
-  numberOfAnts: 60000
+  numberOfAnts: 5000
 --- !u!114 &1828559434
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1567,10 +1580,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1828559431}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b03bc183199744558bcbc1d2fb96e340, type: 3}
+  m_Script: {fileID: 11500000, guid: 81f621d7d3e34bc7aabda606d162ccb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  line: 0
 --- !u!23 &1828559436
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1630,9 +1642,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1869777978}
   - component: {fileID: 1869777979}
-  - component: {fileID: 1869777980}
   - component: {fileID: 1869777982}
   - component: {fileID: 1869777981}
+  - component: {fileID: 1869777983}
   m_Layer: 0
   m_Name: Lake
   m_TagString: Untagged
@@ -1797,19 +1809,6 @@ MonoBehaviour:
         Tag07: 0
     m_SerializedVersion: 1
   m_SerializedVersion: 1
---- !u!114 &1869777980
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1869777977}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b03bc183199744558bcbc1d2fb96e340, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  line: 0
 --- !u!23 &1869777981
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1859,6 +1858,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1869777977}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1869777983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1869777977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81f621d7d3e34bc7aabda606d162ccb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1886676987
 GameObject:
   m_ObjectHideFlags: 0

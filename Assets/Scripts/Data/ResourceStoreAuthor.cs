@@ -1,20 +1,35 @@
 ﻿using Unity.Entities;
+using UnityEngine;
 
-[GenerateAuthoringComponent]
-public struct ResourceStoreAuthour : IComponentData
+namespace Data
 {
-    public ResourceType Type;
-    public uint Left;
-    public uint Total;
-    public ResourceStoreAuthour(ResourceType type, uint left, uint total)
+    public class ResourceStoreAuthor : MonoBehaviour, IConvertGameObjectToEntity
     {
-        Type = type;
-        Left = left;
-        Total = total;
-    }
-}
+        [SerializeField] ResourceType type;
+        [SerializeField] uint count;
 
-public enum ResourceType {
-    Food,
-    Key
+        public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+            => dstManager.AddComponentData(entity, new ResourceStore(type, count, count));
+    }
+
+    public struct ResourceStore : IComponentData
+    {
+        public ResourceType Type;
+        public uint Left;
+        public uint Total;
+
+        public ResourceStore(ResourceType type, uint left, uint total)
+        {
+            Type = type;
+            Left = left;
+            Total = total;
+        }
+    }
+
+    public enum ResourceType
+    {
+        None,
+        Food,
+        Key
+    }
 }
