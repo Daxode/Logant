@@ -44,7 +44,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             DstEntityManager.AddComponentData(lakeEntity, new ExecutionLineDataHolder());
 
             // Reg 0-8: Cary [Type|4 - Type|4 - Held|1]
-            var registerIndexCary0 = new RegisterIndex(1);
+            var registerIndexCary0 = new RegisterIndex(0);
             var registerIndexHeld = new RegisterIndex(8);
             // Reg 9-24: Temps
             var registerIndexTmp0 = new RegisterIndex(9);
@@ -52,6 +52,10 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             // GoTo Home
             var goToHomeEntity = CreateAdditionalEntity(a.stub);
             DstEntityManager.AddComponentData(goToHomeEntity, new ExecutionLineIndex(1));
+            
+            // GoTo Food
+            var goToFoodEntity = CreateAdditionalEntity(a.stub);
+            DstEntityManager.AddComponentData(goToFoodEntity, new ExecutionLineIndex(15));
             
             // Home PickUp Lines
             var homePickEntity = CreateAdditionalEntity(a.stub);

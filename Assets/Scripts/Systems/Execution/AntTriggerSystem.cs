@@ -33,16 +33,7 @@ namespace Systems.Execution
                 registersFromEntity = GetComponentDataFromEntity<Registers>(),
                 indexFromEntity = GetComponentDataFromEntity<RegisterIndex>()
             };
-            // var antPickDropJob = new AntPickUpAndDropOffTriggerJob
-            // {
-            //     stateFromEntity = stateFromEntity,
-            //     dataHolderFromEntity = dataHolderFromEntity,
-            //     executionLines = executionLines
-            // };
             Dependency = triggerJob.Schedule(m_PhysicsWorld.Simulation, Dependency);
-            //var moveToHandle = moveToJob.Schedule(m_PhysicsWorld.Simulation, Dependency);
-            //var antPickDropHandle = antPickDropJob.Schedule(m_PhysicsWorld.Simulation, Dependency);
-            //Dependency = JobHandle.CombineDependencies(moveToHandle, antPickDropHandle);
         }
 
         struct AntTriggerJob : ITriggerEventsJob
@@ -56,8 +47,7 @@ namespace Systems.Execution
             [ReadOnly] public ComponentDataFromEntity<ExecutionLineDataHolder> dataHolderFromEntity;
             [ReadOnly] public ComponentDataFromEntity<RegisterIndex> indexFromEntity;
             public ComponentDataFromEntity<ResourceStore> resourceStoreFromEntity;
-
-
+            
             public void Execute(TriggerEvent triggerEvent)
             {
                 var entityA = triggerEvent.EntityA;
@@ -78,7 +68,7 @@ namespace Systems.Execution
                                 var registersPick = registersFromEntity[entityA];
                                 if (resourceStorePick.Current > 0)
                                 {
-                                    var readIndex = indexFromEntity[line.ePtr];
+                                    byte readIndex = indexFromEntity[line.ePtr];
                                     const byte count = 4;
                                     if (registersPick.Read(readIndex, count) == 0) {
                                         registersPick.Write(readIndex, (uint) resourceStorePick.Type, count);
@@ -133,36 +123,6 @@ namespace Systems.Execution
                 }
             }
         }
-        
-        // struct AntPickUpAndDropOffTriggerJob : ITriggerEventsJob
-        // {
-        //     // Ant
-        //     public ComponentDataFromEntity<ExecutionState> stateFromEntity;
-        //     [ReadOnly] public DynamicBuffer<ExecutionLine> executionLines;
-        //
-        //     // NodeObject
-        //     [ReadOnly] public ComponentDataFromEntity<ExecutionLineDataHolder> dataHolderFromEntity;
-        //     public ComponentDataFromEntity<ResourceStore> resourceStoreFromEntity { get; set; }
-        //
-        //     public void Execute(TriggerEvent triggerEvent)
-        //     {
-        //         var entityA = triggerEvent.EntityA;
-        //         var entityB = triggerEvent.EntityB;
-        //
-        //         if (stateFromEntity.HasComponent(entityA) && dataHolderFromEntity.HasComponent(entityB) && resourceStoreFromEntity.HasComponent(entityB))
-        //         {
-        //             var antState = stateFromEntity[entityA];
-        //             var resourceStore = stateFromEntity[entityA];
-        //             var line = executionLines[antState.executionLine];
-        //             if (line.type != ExecutionType.AntMoveTo) return;
-        //             if (line.ePtr == entityB)
-        //             {
-        //                 antState.executionLine++;
-        //                 stateFromEntity[entityA] = antState;
-        //             }
-        //         }
-        //     }
-        // }
     }
 }
 

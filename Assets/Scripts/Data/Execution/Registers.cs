@@ -1,4 +1,5 @@
-﻿using Unity.Burst;
+﻿using System;
+using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Entities;
 
@@ -39,7 +40,7 @@ namespace Data
         {
             var reg = new Registers();
             for (byte writeIndex = 0; writeIndex < count; writeIndex++) 
-                reg.Write(writeIndex, Read((byte)(count+writeIndex)));
+                reg.Write(writeIndex, Read((byte)(index+writeIndex)));
             return reg.m_Registers.UInt0;
         }
         
@@ -75,6 +76,8 @@ namespace Data
                     ? m_Registers.ULong0 | (1Ul << index)
                     : m_Registers.ULong0 & ~ (1Ul << index);
         }
+
+        public override string ToString() => $"{Convert.ToString((long)m_Registers.ULong0,2)}|{Convert.ToString((long)m_Registers.ULong1,2)}";
     }
     
     public struct RegisterIndex : IComponentData

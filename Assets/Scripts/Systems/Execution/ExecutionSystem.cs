@@ -2,6 +2,7 @@
 using Data;
 using Systems.Execution;
 using Unity.Entities;
+using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
 namespace Systems
@@ -30,6 +31,7 @@ namespace Systems
                             state.executionLine = (ushort) (GetComponent<ExecutionLineIndex>(line.ePtr) - 1);
                             break;
                         case ExecutionType.GoToTrue:
+                            Debug.Log(registers);
                             var registerIndex = GetComponent<RegisterIndex>(line.ePtr);
                             state.executionLine = registers[registerIndex]
                                 ? (ushort) (GetComponent<ExecutionLineIndex>(line.ePtr) - 1)
@@ -68,7 +70,7 @@ namespace Systems
                     }
 
                     state.executionLine++;
-                }).ScheduleParallel();
+                }).WithoutBurst().ScheduleParallel();
             m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
         }
     }
