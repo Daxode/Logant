@@ -31,7 +31,6 @@ namespace Systems
                             state.executionLine = (ushort) (GetComponent<ExecutionLineIndex>(line.ePtr) - 1);
                             break;
                         case ExecutionType.GoToTrue:
-                            Debug.Log(registers);
                             var registerIndex = GetComponent<RegisterIndex>(line.ePtr);
                             state.executionLine = registers[registerIndex]
                                 ? (ushort) (GetComponent<ExecutionLineIndex>(line.ePtr) - 1)
@@ -66,11 +65,13 @@ namespace Systems
                             var lines = executionLineFromEntity[line.ePtr];
                             state.executionLine = (ushort) (lines[rndHolder.rnd.NextInt(lines.Length)] - 1);
                             break;
+                        case ExecutionType.SkipAFrame:
+                            break;
                         default: return;
                     }
 
                     state.executionLine++;
-                }).WithoutBurst().ScheduleParallel();
+                }).ScheduleParallel();
             m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
         }
     }

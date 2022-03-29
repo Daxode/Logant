@@ -15,6 +15,7 @@ public enum ExecutionType
 
     // --------------------- Exotic -----------------------
     GoToRandom, // Go to random ExecutionLineIndex from buffer
+    SkipAFrame, // Skips a frame
 
     // --------------------- Ant Behaviour ----------------
     AntMoveTo, // Moves Ant to Translation

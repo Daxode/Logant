@@ -33,7 +33,7 @@ namespace Systems
             {
                 Entities.ForEach((ref AntHillData data, ref RandomHolder randomHolder, in Translation translation, in AntPrefab ant) =>
                 {
-                    const ushort batchCount = 1;
+                    const ushort batchCount = 5;
                     if (data.numberOfAnts >= data.numberOfAntsSpawned + batchCount)
                     {
                         var spawnedAnts = EntityManager.Instantiate(ant.prefab, batchCount, Allocator.Temp);
@@ -45,7 +45,7 @@ namespace Systems
                             SetComponent(spawnedAnts[i], new Translation {Value = translation.Value + new float3(flatOffset.x, 0, flatOffset.y)});
                             var id = (ushort) (data.numberOfAntsSpawned + i);
                             SetComponent(spawnedAnts[i], new ExecutionState {id = id});
-                            SetComponent(spawnedAnts[i], new RandomHolder((uint)(id+1)));
+                            SetComponent(spawnedAnts[i], new RandomHolder(Random.CreateFromIndex(id).state));
                         }
 
                         data.numberOfAntsSpawned += batchCount;

@@ -1,5 +1,6 @@
 using System;
 using Data;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -36,6 +37,7 @@ namespace Systems.Execution
             Dependency = triggerJob.Schedule(m_PhysicsWorld.Simulation, Dependency);
         }
 
+        [BurstCompile]
         struct AntTriggerJob : ITriggerEventsJob
         {
             // Ant

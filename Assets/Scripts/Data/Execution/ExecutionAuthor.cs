@@ -52,11 +52,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             // GoTo Home
             var goToHomeEntity = CreateAdditionalEntity(a.stub);
             DstEntityManager.AddComponentData(goToHomeEntity, new ExecutionLineIndex(1));
-            
-            // GoTo Food
-            var goToFoodEntity = CreateAdditionalEntity(a.stub);
-            DstEntityManager.AddComponentData(goToFoodEntity, new ExecutionLineIndex(15));
-            
+
             // Home PickUp Lines
             var homePickEntity = CreateAdditionalEntity(a.stub);
             var homePickLines = DstEntityManager.AddBuffer<ExecutionLineIndexElement>(homePickEntity);
@@ -75,7 +71,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             // Button Pick Resource Lines
             var buttonPickEntity = CreateAdditionalEntity(a.stub);
             var buttonPickLines = DstEntityManager.AddBuffer<ExecutionLineIndexElement>(buttonPickEntity);
-            buttonPickLines.Add(15);
+            buttonPickLines.Add(16);
             
             // Button Drop Resource Lines
             var buttonDropEntity = CreateAdditionalEntity(a.stub);
@@ -92,7 +88,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             // Lake Pick Resource Lines
             var lakePickEntity = CreateAdditionalEntity(a.stub);
             var lakePickLines = DstEntityManager.AddBuffer<ExecutionLineIndexElement>(lakePickEntity);
-            lakePickLines.Add(15);
+            lakePickLines.Add(16);
             
             // Lake Drop Resource Lines
             var lakeDropEntity = CreateAdditionalEntity(a.stub);
@@ -102,8 +98,15 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             // // Lake HasResource Lines
             var lakeHasResourceEntity = CreateAdditionalEntity(a.stub);
             DstEntityManager.AddComponentData(lakeHasResourceEntity, registerIndexHeld);
-            DstEntityManager.AddComponentData(lakeHasResourceEntity, new ExecutionLineIndex(14));
+            DstEntityManager.AddComponentData(lakeHasResourceEntity, new ExecutionLineIndex(15));
+            
+            // Lake Resource
+            DstEntityManager.AddComponentData(lakeEntity, registerIndexCary0);
 
+            
+            // GoTo Food
+            var goToFoodEntity = CreateAdditionalEntity(a.stub);
+            DstEntityManager.AddComponentData(goToFoodEntity, new ExecutionLineIndex(16));
             
             // Food Pick Resource Lines
             var foodPickEntity = CreateAdditionalEntity(a.stub);
@@ -119,13 +122,13 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             // // Food HasResource Lines
             var foodHasResourceEntity = CreateAdditionalEntity(a.stub);
             DstEntityManager.AddComponentData(foodHasResourceEntity, registerIndexHeld);
-            DstEntityManager.AddComponentData(foodHasResourceEntity, new ExecutionLineIndex(19));
+            DstEntityManager.AddComponentData(foodHasResourceEntity, new ExecutionLineIndex(20));
             
             // Food Resource
             DstEntityManager.AddComponentData(foodEntity, registerIndexCary0);
 
             
-            // --------- Ant=Sembly ==================
+            // --------- Ant-Sembly ==================
             var lines = DstEntityManager.AddBuffer<ExecutionLine>(entity);
             // Entry
             lines.Add((ExecutionType.GoTo, goToHomeEntity));
@@ -135,7 +138,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             lines.Add((ExecutionType.GoToTrue, homeHasResourceEntity));
             lines.Add((ExecutionType.GoToRandom, homePickEntity));
             lines.Add((ExecutionType.AntDropResource, homeEntity));
-            lines.Add((ExecutionType.GoToTrue, homeHasResourceEntity));
+            lines.Add((ExecutionType.AntDropResource, homeEntity));
             lines.Add((ExecutionType.AntDestroy));
             
             // Button[7]: 
@@ -146,6 +149,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             
             // Lake[11]:
             lines.Add((ExecutionType.AntMoveTo, lakeEntity));
+            lines.Add((ExecutionType.SkipAFrame, lakeEntity));
             lines.Add((ExecutionType.GoToTrue, lakeHasResourceEntity));
             lines.Add((ExecutionType.GoToRandom, lakePickEntity));
             lines.Add((ExecutionType.GoToRandom, lakeDropEntity));
