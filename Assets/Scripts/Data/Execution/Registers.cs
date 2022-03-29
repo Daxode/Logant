@@ -57,9 +57,9 @@ namespace Data
         public void Set(byte index)
         {
             if (index > 64) {
-                m_Registers.ULong1 |= 1Ul << (index - 64);   
+                m_Registers.ULong1 = m_Registers.ULong1 | 1Ul << (index - 64);   
             } else {
-                m_Registers.ULong0 |= 1Ul << index;
+                m_Registers.ULong0 = m_Registers.ULong0 | (1Ul << index);
             }
         }
     

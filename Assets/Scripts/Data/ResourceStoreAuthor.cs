@@ -6,22 +6,23 @@ namespace Data
     public class ResourceStoreAuthor : MonoBehaviour, IConvertGameObjectToEntity
     {
         [SerializeField] ResourceType type;
-        [SerializeField] uint count;
+        [SerializeField] uint current;
+        [SerializeField] uint total;
 
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
-            => dstManager.AddComponentData(entity, new ResourceStore(type, count, count));
+            => dstManager.AddComponentData(entity, new ResourceStore(type, current, total));
     }
 
     public struct ResourceStore : IComponentData
     {
         public ResourceType Type;
-        public uint Left;
+        public uint Current;
         public uint Total;
 
-        public ResourceStore(ResourceType type, uint left, uint total)
+        public ResourceStore(ResourceType type, uint current, uint total)
         {
             Type = type;
-            Left = left;
+            Current = current;
             Total = total;
         }
     }

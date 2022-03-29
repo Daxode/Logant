@@ -19,7 +19,8 @@ public enum ExecutionType
     // --------------------- Ant Behaviour ----------------
     AntMoveTo, // Moves Ant to Translation
     AntDestroy,// Destroys Ant
-    AntPickUp, // PickUp resource at ResourceStore, using RegisterIndex of bit-count 9 [4-4-1]
+    AntPickResource, // Pick resource at ResourceStore, using RegisterIndex of bit-count 9 [Type|4 - Type|4 - Held|1]
+    AntDropResource, // Drop resource at ResourceStore, using RegisterIndex of bit-count 9 [Type|4 - Type|4 - Held|1]
 }
 
 [InternalBufferCapacity(128)]

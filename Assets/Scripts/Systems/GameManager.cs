@@ -42,7 +42,7 @@ namespace Systems
             {
                 label.text = "";
                 Entities.ForEach((in AntHillData hill) => label.text += $"Ants spawned: {hill.numberOfAntsSpawned}/{hill.numberOfAnts}\n").WithoutBurst().Run();
-                Entities.ForEach((in ResourceStore resourceStore) => label.text += $"{resourceStore.Type} left: {resourceStore.Left}/{resourceStore.Total}\n").WithoutBurst().Run();
+                Entities.ForEach((in ResourceStore resourceStore) => label.text += $"{resourceStore.Type} left: {resourceStore.Current}/{resourceStore.Total}\n").WithoutBurst().Run();
             }
 
 

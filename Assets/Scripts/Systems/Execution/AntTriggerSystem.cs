@@ -73,26 +73,53 @@ namespace Systems.Execution
                         {
                             case ExecutionType.AntMoveTo:
                                 break;
-                            case ExecutionType.AntPickUp:
-                                var resourceStore = resourceStoreFromEntity[line.ePtr];
-                                var registers = registersFromEntity[entityA];
-                                if (resourceStore.Left > 0)
+                            case ExecutionType.AntPickResource:
+                                var resourceStorePick = resourceStoreFromEntity[line.ePtr];
+                                var registersPick = registersFromEntity[entityA];
+                                if (resourceStorePick.Current > 0)
                                 {
                                     var readIndex = indexFromEntity[line.ePtr];
                                     const byte count = 4;
-                                    if (registers.Read(readIndex, count) == 0) {
-                                        registers.Write(readIndex, (uint) resourceStore.Type, count);
-                                        registers.Write((byte)(readIndex+count*2), true);
-                                        resourceStore.Left--;
-                                        registersFromEntity[line.ePtr] = registers;
-                                        resourceStoreFromEntity[line.ePtr] = resourceStore;
+                                    if (registersPick.Read(readIndex, count) == 0) {
+                                        registersPick.Write(readIndex, (uint) resourceStorePick.Type, count);
+                                        registersPick.Write((byte)(readIndex+count*2), true);
+                                        resourceStorePick.Current--;
+                                        registersFromEntity[entityA] = registersPick;
+                                        resourceStoreFromEntity[line.ePtr] = resourceStorePick;
                                     } else {
-                                        if (registers.Read((byte)(readIndex+count), count) == 0) {
-                                            registers.Write((byte)(readIndex+count), (uint) resourceStore.Type, count);
-                                            registers.Write((byte)(readIndex+count*2), true);
-                                            resourceStore.Left--;
-                                            registersFromEntity[line.ePtr] = registers;
-                                            resourceStoreFromEntity[line.ePtr] = resourceStore;
+                                        if (registersPick.Read((byte)(readIndex+count), count) == 0) {
+                                            registersPick.Write((byte)(readIndex+count), (uint) resourceStorePick.Type, count);
+                                            registersPick.Write((byte)(readIndex+count*2), true);
+                                            resourceStorePick.Current--;
+                                            registersFromEntity[entityA] = registersPick;
+                                            resourceStoreFromEntity[line.ePtr] = resourceStorePick;
+                                        }
+                                    }
+                                }
+                                break;
+                            case ExecutionType.AntDropResource:
+                                var resourceStoreDrop = resourceStoreFromEntity[line.ePtr];
+                                var registersDrop = registersFromEntity[entityA];
+                                if (resourceStoreDrop.Current < resourceStoreDrop.Total)
+                                {
+                                    var readIndex = indexFromEntity[line.ePtr];
+                                    const byte count = 4;
+                                    var slot0 = registersDrop.Read(readIndex, count);
+                                    var slot1 = registersDrop.Read((byte) (readIndex + count), count);
+                                    if (slot0 == (uint)resourceStoreDrop.Type)
+                                    {
+                                        registersDrop.Write(readIndex, 0, count);
+                                        registersDrop.Write((byte)(readIndex+count*2), slot1!=0);
+                                        resourceStoreDrop.Current++;
+                                        registersFromEntity[entityA] = registersDrop;
+                                        resourceStoreFromEntity[line.ePtr] = resourceStoreDrop;
+                                    } else {
+                                        if (registersDrop.Read((byte)(readIndex+count), count) == (uint)resourceStoreDrop.Type) {
+                                            registersDrop.Write((byte)(readIndex+count), 0, count);
+                                            registersDrop.Write((byte)(readIndex+count*2), slot0!=0);
+                                            resourceStoreDrop.Current++;
+                                            registersFromEntity[entityA] = registersDrop;
+                                            resourceStoreFromEntity[line.ePtr] = resourceStoreDrop;
                                         }
                                     }
                                 }

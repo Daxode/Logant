@@ -45,7 +45,7 @@ namespace Systems
                             SetComponent(spawnedAnts[i], new Translation {Value = translation.Value + new float3(flatOffset.x, 0, flatOffset.y)});
                             var id = (ushort) (data.numberOfAntsSpawned + i);
                             SetComponent(spawnedAnts[i], new ExecutionState {id = id});
-                            SetComponent(spawnedAnts[i], new RandomHolder(id));
+                            SetComponent(spawnedAnts[i], new RandomHolder((uint)(id+1)));
                         }
 
                         data.numberOfAntsSpawned += batchCount;

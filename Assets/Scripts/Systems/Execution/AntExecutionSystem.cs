@@ -15,7 +15,7 @@ namespace Systems
     public partial class AntExecutionSystem : SystemBase
     {
         EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;
-        protected override void OnCreate() => World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
+        protected override void OnCreate() => m_EndSimulationEntityCommandBufferSystem=World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
 
         protected override void OnUpdate()
         {
@@ -61,6 +61,8 @@ namespace Systems
 
                 state.executionLine++;
             }).ScheduleParallel();
+            
+            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
         }
     }
 }
