@@ -7,6 +7,7 @@ using Unity.Physics.Extensions;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements.Experimental;
 
 namespace Systems
 {
@@ -18,14 +19,19 @@ namespace Systems
         protected override void OnStartRunning()
         {
             var doc = this.GetSingleton<UIStore>().Doc;
-            if (doc.rootVisualElement.Q(className: "Switch") is Button button)
+
+            var button = doc.rootVisualElement.Q<Button>("Jump");
+            if (button!=null)
             {
-                button.text = "Spam to Jump!";
-                button.RegisterCallback<ClickEvent>(ev => m_ButtonClicked = true);
+                button.text = "<i>Jump</i> with this";
+                button.clicked += () => m_ButtonClicked = true;
+                // var idk1 = new StyleValues {backgroundColor = Color.black};
+                // var idk2 = new StyleValues {backgroundColor = new Color(0.2f, 0.67f, 0.65f)};
+                // button.experimental.animation.Start( idk1, idk2, 5000);
+                button.AddToClassList("jump");
             }
 
-            if (doc.rootVisualElement.Q(className: "Label") is Label label)
-                m_Label = label;
+            m_Label = doc.rootVisualElement.Q<Label>();
 
         }
 

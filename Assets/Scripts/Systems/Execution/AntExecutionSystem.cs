@@ -34,6 +34,8 @@ namespace Systems
                 switch (executionData.type)
                 {
                     // Ant Behaviour
+                    case ExecutionType.AntPickResource:
+                    case ExecutionType.AntDropResource:
                     case ExecutionType.AntMoveTo:
                         var rnd = Random.CreateFromIndex(state.id);
                         
@@ -50,9 +52,8 @@ namespace Systems
                         mass.GetImpulseFromForce(dir, ForceMode.Force, in deltaTime, out var impulse, out var massImpulse);
                         vel.ApplyLinearImpulse(in massImpulse, in impulse);
                         vel.ApplyAngularImpulse(in mass, 5f * deltaTime * math.up() * meth.SignedAngle(ltw.Forward, dir, math.up()));
-
-                        state.executionLine--; // Keeps running the above code until external source increments.
-                        break;
+                        
+                        return; // Keeps running the above code until external source increments.
                     case ExecutionType.AntDestroy:
                         ecb.DestroyEntity(entityInQueryIndex, e);
                         return;

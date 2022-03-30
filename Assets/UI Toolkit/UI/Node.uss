@@ -1,10 +1,34 @@
-.idk {
-    position: absolute;
-    bottom: 0;
-    -unity-background-image-tint-color: rgba(255, 0, 0, 255);
+.unity-button {
+    background-color: rgba(102, 102, 119, 0.25);
+    font-size: 24px;
+    border-radius: 10px;
+    flex-grow: 1;
+    margin: 10px;
+    padding: 10px;
+    width: 0;
 }
 
-.idk:hover {
-    width: 100%;
-    height: 100px;
+.unity-button:hover {
+    background-color: rgba(0,0,0, 0.6);
+    font-size: 20px;
+}
+
+.jump:hover {
+    background-color: rgba(0,0,200, 0.6);
+    font-size: 20px;
+}
+
+.unity-label {
+    color: rgb(255, 255, 255);
+    -unity-text-outline-color: rgba(0, 0, 0, 255);
+    -unity-text-outline-width: 1px;
+    font-size: 32px;
+}
+
+* {
+    border-color: rgba(0, 0, 0, 0);
+    -unity-font-definition: resource('Assets/Settings/COMIC SDF.asset');
+    -unity-font-style: bold;
+    color: white;
+    -unity-text-align: middle-center;
 }

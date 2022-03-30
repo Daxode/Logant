@@ -149,7 +149,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             
             // Lake[11]:
             lines.Add((ExecutionType.AntMoveTo, lakeEntity));
-            lines.Add((ExecutionType.SkipAFrame, lakeEntity));
+            lines.Add((ExecutionType.AntPickResource, lakeEntity));
             lines.Add((ExecutionType.GoToTrue, lakeHasResourceEntity));
             lines.Add((ExecutionType.GoToRandom, lakePickEntity));
             lines.Add((ExecutionType.GoToRandom, lakeDropEntity));
