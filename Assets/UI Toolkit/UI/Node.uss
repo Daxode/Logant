@@ -27,7 +27,7 @@
 
 * {
     border-color: rgba(0, 0, 0, 0);
-    -unity-font-definition: resource('Assets/Settings/COMIC SDF.asset');
+    -unity-font-definition: resource('comic');
     -unity-font-style: bold;
     color: white;
     -unity-text-align: middle-center;
