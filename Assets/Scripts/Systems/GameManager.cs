@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Data;
 using Systems.GameObjects;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
@@ -18,24 +20,32 @@ namespace Systems
         bool m_ButtonClicked;
         Label m_Label;
 
+        NativeArray<FixedString64Bytes> m_ResourceTypeToString;
+        FixedString64Bytes m_AntString;
+        protected override void OnCreate()
+        {
+            m_ResourceTypeToString = new NativeArray<FixedString64Bytes>(Enum.GetNames(typeof(ResourceType)).Select(n=>new FixedString64Bytes(n)).ToArray(), Allocator.Persistent);
+            m_AntString = new FixedString64Bytes("Ants");
+        }
+
+        protected override void OnDestroy()
+        {
+            m_ResourceTypeToString.Dispose();
+        }
+
         protected override void OnStartRunning()
         {
-            var hybridEntity = GetEntityQuery(typeof(UIDocument)).GetSingletonEntity();
-            var doc = EntityManager.GetComponentObject<UIDocument>(hybridEntity);
+            var doc = EntityManager.GetComponentObject<UIDocument>(GetSingletonEntity<UIDocument>());
 
             var button = doc.rootVisualElement.Q<Button>("Jump");
             if (button!=null)
             {
-                button.text = "<i>Jump</i> with this";
+                button.text = "<i>Jump</i> with <b>this</b>";
                 button.clicked += () => m_ButtonClicked = true;
-                // var idk1 = new StyleValues {backgroundColor = Color.black};
-                // var idk2 = new StyleValues {backgroundColor = new Color(0.2f, 0.67f, 0.65f)};
-                // button.experimental.animation.Start( idk1, idk2, 5000);
                 button.AddToClassList("jump");
             }
 
             m_Label = doc.rootVisualElement.Q<Label>();
-
         }
 
         protected override void OnUpdate()
@@ -47,14 +57,36 @@ namespace Systems
                 m_ButtonClicked = false;
             }
 
-            var label = m_Label;
-            if (label != null)
+            if (m_Label != null)
             {
-                label.text = "";
-                Entities.ForEach((in AntHillData hill) => label.text += $"Ants spawned: {hill.numberOfAntsSpawned}/{hill.numberOfAnts}\n").WithoutBurst().Run();
-                Entities.ForEach((in ResourceStore resourceStore) => label.text += $"{resourceStore.Type}[{resourceStore.Current}/{resourceStore.Total}]\n").WithoutBurst().Run();
-            }
+                var str = new FixedString512Bytes();
+                var antString = m_AntString;
+                Entities.ForEach((in AntHillData hill) =>
+                {
+                    str.Append(antString);
+                    str.Append(' ');
+                    str.Append('[');
+                    str.Append(hill.Current);
+                    str.Append('/');
+                    str.Append(hill.Total);
+                    str.Append(']');
+                    str.Append('\n');
+                }).Run();
 
+                var resourceTypeToString = m_ResourceTypeToString;
+                Entities.ForEach((in ResourceStore resourceStore) =>
+                {
+                    str.Append(resourceTypeToString[(int)resourceStore.Type]);
+                    str.Append(' ');
+                    str.Append('[');
+                    str.Append(resourceStore.Current);
+                    str.Append('/');
+                    str.Append(resourceStore.Total);
+                    str.Append(']');
+                    str.Append('\n');
+                }).Run();
+                m_Label.text = str.ToString();
+            }
 
 #if !UNITY_EDITOR
         if (Keyboard.current.escapeKey.isPressed) 
