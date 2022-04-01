@@ -2,7 +2,7 @@
     <Style src="/Assets/UI Toolkit/UI/Node.uss" />
     <ui:VisualElement style="width: 100%; height: 100%; align-items: center;">
         <ui:Label name="DebugText" text="Lorem Ipsum Dolor Sit Amet!" />
-        <ui:VisualElement name="Foot" style="position: absolute; left: 0; bottom: 0; width: 100%; flex-direction: row; justify-content: center;">
+        <ui:VisualElement name="Foot" style="position: absolute; left: 0; bottom: 0; right:0; flex-direction: row;">
             <ui:Button name="Jump" text="Lorem " />
             <ui:Button name="Jump" text="Lorem Ipsum Dolor Sit Amet!" />
             <ui:Button name="Jump" text="Lorem Ipsum Dolor Sit Amet!" />

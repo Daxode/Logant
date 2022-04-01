@@ -1,9 +1,11 @@
 ﻿using System;
 using Data;
+using Systems.GameObjects;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Extensions;
+using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
@@ -18,7 +20,8 @@ namespace Systems
 
         protected override void OnStartRunning()
         {
-            var doc = this.GetSingleton<UIStore>().Doc;
+            var hybridEntity = GetEntityQuery(typeof(UIDocument)).GetSingletonEntity();
+            var doc = EntityManager.GetComponentObject<UIDocument>(hybridEntity);
 
             var button = doc.rootVisualElement.Q<Button>("Jump");
             if (button!=null)
