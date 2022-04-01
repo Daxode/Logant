@@ -28,7 +28,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
     {
         Entities.ForEach((ExecutionAuthor a) =>
         {
-            if (a.stub==null||a.points==null||a.points.Length<4) return;
+            if (a.stub==null||a.points==null||a.points.Length<5) return;
             var entity = GetPrimaryEntity(a);
             
             // Get Entities.
@@ -36,12 +36,14 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             var foodEntity = GetPrimaryEntity(a.points[1]);
             var buttonEntity = GetPrimaryEntity(a.points[2]);
             var lakeEntity = GetPrimaryEntity(a.points[3]);
+            var waterSpawn = GetPrimaryEntity(a.points[4]);
             
             // Make sure they are DataHolders
             DstEntityManager.AddComponentData(homeEntity, new ExecutionLineDataHolder());
             DstEntityManager.AddComponentData(foodEntity, new ExecutionLineDataHolder());
             DstEntityManager.AddComponentData(buttonEntity, new ExecutionLineDataHolder());
             DstEntityManager.AddComponentData(lakeEntity, new ExecutionLineDataHolder());
+            DstEntityManager.AddComponentData(waterSpawn, new ExecutionLineDataHolder());
 
             // Reg 0-8: Cary [Type|4 - Type|4 - Held|1]
             var registerIndexCary0 = new RegisterIndex(0);
@@ -56,13 +58,18 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             // Home PickUp Lines
             var homePickEntity = CreateAdditionalEntity(a.stub);
             var homePickLines = DstEntityManager.AddBuffer<ExecutionLineIndexElement>(homePickEntity);
-            homePickLines.Add(7);
-            homePickLines.Add(11);
+            homePickLines.Add(8);
+            homePickLines.Add(12);
             
             // // Home HasResource Lines
             var homeHasResourceEntity = CreateAdditionalEntity(a.stub);
             DstEntityManager.AddComponentData(homeHasResourceEntity, registerIndexHeld);
             DstEntityManager.AddComponentData(homeHasResourceEntity, new ExecutionLineIndex(4));
+            
+            // // Home HasResource AfterDrop Lines
+            var homeHasResourceAfterDropEntity = CreateAdditionalEntity(a.stub);
+            DstEntityManager.AddComponentData(homeHasResourceAfterDropEntity, registerIndexHeld);
+            DstEntityManager.AddComponentData(homeHasResourceAfterDropEntity, new ExecutionLineIndex(22));
             
             // Home Resource
             DstEntityManager.AddComponentData(homeEntity, registerIndexCary0);
@@ -71,24 +78,24 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             // Button Pick Resource Lines
             var buttonPickEntity = CreateAdditionalEntity(a.stub);
             var buttonPickLines = DstEntityManager.AddBuffer<ExecutionLineIndexElement>(buttonPickEntity);
-            buttonPickLines.Add(16);
+            buttonPickLines.Add(17);
             
             // Button Drop Resource Lines
             var buttonDropEntity = CreateAdditionalEntity(a.stub);
             var buttonDropLines = DstEntityManager.AddBuffer<ExecutionLineIndexElement>(buttonDropEntity);
             buttonDropLines.Add(1);
-            buttonDropLines.Add(11);
+            buttonDropLines.Add(12);
             
             // // Button HasResource Lines
             var buttonHasResourceEntity = CreateAdditionalEntity(a.stub);
             DstEntityManager.AddComponentData(buttonHasResourceEntity, registerIndexHeld);
-            DstEntityManager.AddComponentData(buttonHasResourceEntity, new ExecutionLineIndex(10));
+            DstEntityManager.AddComponentData(buttonHasResourceEntity, new ExecutionLineIndex(11));
 
             
             // Lake Pick Resource Lines
             var lakePickEntity = CreateAdditionalEntity(a.stub);
             var lakePickLines = DstEntityManager.AddBuffer<ExecutionLineIndexElement>(lakePickEntity);
-            lakePickLines.Add(16);
+            lakePickLines.Add(17);
             
             // Lake Drop Resource Lines
             var lakeDropEntity = CreateAdditionalEntity(a.stub);
@@ -98,7 +105,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             // // Lake HasResource Lines
             var lakeHasResourceEntity = CreateAdditionalEntity(a.stub);
             DstEntityManager.AddComponentData(lakeHasResourceEntity, registerIndexHeld);
-            DstEntityManager.AddComponentData(lakeHasResourceEntity, new ExecutionLineIndex(15));
+            DstEntityManager.AddComponentData(lakeHasResourceEntity, new ExecutionLineIndex(16));
             
             // Lake Resource
             DstEntityManager.AddComponentData(lakeEntity, registerIndexCary0);
@@ -106,7 +113,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             
             // GoTo Food
             var goToFoodEntity = CreateAdditionalEntity(a.stub);
-            DstEntityManager.AddComponentData(goToFoodEntity, new ExecutionLineIndex(16));
+            DstEntityManager.AddComponentData(goToFoodEntity, new ExecutionLineIndex(17));
             
             // Food Pick Resource Lines
             var foodPickEntity = CreateAdditionalEntity(a.stub);
@@ -117,16 +124,18 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             var foodDropEntity = CreateAdditionalEntity(a.stub);
             var foodDropLines = DstEntityManager.AddBuffer<ExecutionLineIndexElement>(foodDropEntity);
             foodDropLines.Add(1);
-            foodDropLines.Add(7);
+            foodDropLines.Add(8);
             
             // // Food HasResource Lines
             var foodHasResourceEntity = CreateAdditionalEntity(a.stub);
             DstEntityManager.AddComponentData(foodHasResourceEntity, registerIndexHeld);
-            DstEntityManager.AddComponentData(foodHasResourceEntity, new ExecutionLineIndex(20));
+            DstEntityManager.AddComponentData(foodHasResourceEntity, new ExecutionLineIndex(21));
             
             // Food Resource
             DstEntityManager.AddComponentData(foodEntity, registerIndexCary0);
 
+            // WaterSpawn Resource
+            DstEntityManager.AddComponentData(waterSpawn, registerIndexCary0);
             
             // --------- Ant-Sembly ==================
             var lines = DstEntityManager.AddBuffer<ExecutionLine>(entity);
@@ -139,6 +148,7 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             lines.Add((ExecutionType.GoToRandom, homePickEntity));
             lines.Add((ExecutionType.AntDropResource, homeEntity));
             lines.Add((ExecutionType.AntDropResource, homeEntity));
+            lines.Add((ExecutionType.GoToTrue, homeHasResourceAfterDropEntity));
             lines.Add((ExecutionType.AntDestroy));
             
             // Button[7]: 
@@ -160,6 +170,12 @@ public class ExecutionConversionSystem : GameObjectConversionSystem
             lines.Add((ExecutionType.GoToTrue, foodHasResourceEntity));
             lines.Add((ExecutionType.GoToRandom, foodPickEntity));
             lines.Add((ExecutionType.GoToRandom, foodDropEntity));
+            
+            // waterSpawn[22]
+            lines.Add((ExecutionType.AntMoveTo, waterSpawn));
+            lines.Add((ExecutionType.AntDropResource, waterSpawn));
+            lines.Add((ExecutionType.AntDropResource, waterSpawn));
+            lines.Add((ExecutionType.AntDestroy));
         });
     }
 }

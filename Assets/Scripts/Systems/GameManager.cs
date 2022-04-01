@@ -7,6 +7,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Extensions;
+using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -22,17 +23,22 @@ namespace Systems
 
         NativeArray<FixedString64Bytes> m_ResourceTypeToString;
         FixedString64Bytes m_AntString;
+        FixedString64Bytes m_ColorTagStart;
+        NativeHashMap<Entity, FixedString64Bytes> m_Colors;
         protected override void OnCreate()
         {
             m_ResourceTypeToString = new NativeArray<FixedString64Bytes>(Enum.GetNames(typeof(ResourceType)).Select(n=>new FixedString64Bytes(n)).ToArray(), Allocator.Persistent);
             m_AntString = new FixedString64Bytes("Ants");
+            m_ColorTagStart = new FixedString64Bytes("<color=#");
         }
 
         protected override void OnDestroy()
         {
             m_ResourceTypeToString.Dispose();
+            m_Colors.Dispose();
         }
 
+        EntityQuery m_RenderMeshQuery;
         protected override void OnStartRunning()
         {
             var doc = EntityManager.GetComponentObject<UIDocument>(GetSingletonEntity<UIDocument>());
@@ -46,6 +52,9 @@ namespace Systems
             }
 
             m_Label = doc.rootVisualElement.Q<Label>();
+            m_Colors = new NativeHashMap<Entity, FixedString64Bytes>(m_RenderMeshQuery.CalculateEntityCount(), Allocator.Persistent);
+            Entities.WithStoreEntityQueryInField(ref m_RenderMeshQuery).ForEach((Entity e, in RenderMesh renderMeshQuery) 
+                => m_Colors[e] = new FixedString64Bytes(""+ColorUtility.ToHtmlStringRGB(renderMeshQuery.material.color))).WithoutBurst().Run();
         }
 
         protected override void OnUpdate()
@@ -61,8 +70,13 @@ namespace Systems
             {
                 var str = new FixedString512Bytes();
                 var antString = m_AntString;
-                Entities.ForEach((in AntHillData hill) =>
+                var colorTagStart = m_ColorTagStart;
+                var colors = m_Colors;
+                Entities.ForEach((Entity e, in AntHillData hill) =>
                 {
+                    str.Append(colorTagStart);
+                    str.Append(colors[e]);
+                    str.Append('>');
                     str.Append(antString);
                     str.Append(' ');
                     str.Append('[');
@@ -74,8 +88,11 @@ namespace Systems
                 }).Run();
 
                 var resourceTypeToString = m_ResourceTypeToString;
-                Entities.ForEach((in ResourceStore resourceStore) =>
+                Entities.ForEach((Entity e, in ResourceStore resourceStore) =>
                 {
+                    str.Append(colorTagStart);
+                    str.Append(colors[e]);
+                    str.Append('>');
                     str.Append(resourceTypeToString[(int)resourceStore.Type]);
                     str.Append(' ');
                     str.Append('[');

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Data;
 using Unity.Collections;
 using UnityEngine;
@@ -22,7 +23,7 @@ namespace Systems
         protected override void OnDestroy() => m_SpawnedEntitiesBuffer.Dispose();
 
         float m_SpawnTimeLeft;
-        const ushort k_BatchCount = 5;
+        const ushort k_BatchCount = 3;
         protected override void OnUpdate()
         {
             if (m_SpawnTimeLeft < 0)
@@ -34,22 +35,30 @@ namespace Systems
                     if (data.Total >= data.Current + k_BatchCount)
                     {
                         ecb.Instantiate(ant.prefab, spawnedEntitiesBuffer);
-                        for (ushort i = 0; i < k_BatchCount; i++)
-                        {
-                            var direction = randomHolder.rnd.NextFloat2Direction();
-                            var magnitude = randomHolder.rnd.NextFloat();
-                            var flatOffset = direction * magnitude * 0.5f;
-                            ecb.SetComponent(spawnedEntitiesBuffer[i], new Translation {Value = translation.Value + new float3(flatOffset.x, 0, flatOffset.y)});
-                            var id = (ushort) (data.Current + i);
-                            ecb.SetComponent(spawnedEntitiesBuffer[i], new ExecutionState {id = id});
-                            ecb.SetComponent(spawnedEntitiesBuffer[i], new RandomHolder(Random.CreateFromIndex(id).state));
-                        }
-
+                        for (ushort i = 0; i < k_BatchCount; i++) 
+                            SetupAnt(ref ecb, ref randomHolder.rnd, spawnedEntitiesBuffer[i], (ushort) (data.Current + i), in translation.Value);
                         data.Current += k_BatchCount;
+                    } else if (data.Total>data.Current) { // If still remaining ants
+                        for (ushort i = 0; i < data.Total-data.Current; i++) {
+                            var e = ecb.Instantiate(ant.prefab);
+                            SetupAnt(ref ecb, ref randomHolder.rnd, e, (ushort)(data.Current+i), in translation.Value);
+                        }
+                        data.Current = data.Total;
                     }
                 }).Run();
                 m_SpawnTimeLeft = GetSingleton<GlobalData>().SpawnInterval;
             } else m_SpawnTimeLeft -= Time.DeltaTime;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void SetupAnt(ref EntityCommandBuffer ecb, ref Random rnd, in Entity entity, in ushort id, in float3 pos)
+        {
+            var direction = rnd.NextFloat2Direction();
+            var magnitude = rnd.NextFloat();
+            var flatOffset = direction * magnitude * 0.5f;
+            ecb.SetComponent(entity, new Translation {Value = pos + new float3(flatOffset.x, 0, flatOffset.y)});
+            ecb.SetComponent(entity, new ExecutionState {id = id});
+            ecb.SetComponent(entity, new RandomHolder(Random.CreateFromIndex(id).state));
         }
     }
 }
