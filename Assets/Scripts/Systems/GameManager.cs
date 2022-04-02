@@ -52,13 +52,24 @@ namespace Systems
             }
 
             m_Label = doc.rootVisualElement.Q<Label>();
-            m_Colors = new NativeHashMap<Entity, FixedString64Bytes>(m_RenderMeshQuery.CalculateEntityCount(), Allocator.Persistent);
-            Entities.WithStoreEntityQueryInField(ref m_RenderMeshQuery).ForEach((Entity e, in RenderMesh renderMeshQuery) 
-                => m_Colors[e] = new FixedString64Bytes(""+ColorUtility.ToHtmlStringRGB(renderMeshQuery.material.color))).WithoutBurst().Run();
         }
 
+        bool m_NotFoundColors = true;
+    
         protected override void OnUpdate()
         {
+            if (m_NotFoundColors)
+            {
+                var count = m_RenderMeshQuery.CalculateEntityCount();
+                if (count > 1)
+                {
+                    m_Colors = new NativeHashMap<Entity, FixedString64Bytes>(count, Allocator.Persistent);
+                    Entities.WithStoreEntityQueryInField(ref m_RenderMeshQuery).ForEach((Entity e, in RenderMesh renderMeshQuery) 
+                        => m_Colors[e] = new FixedString64Bytes(ColorUtility.ToHtmlStringRGB(renderMeshQuery.material.color))).WithoutBurst().Run();
+                    m_NotFoundColors = false;
+                }
+            }
+            
             if (m_ButtonClicked)
             {
                 Entities.ForEach((ref PhysicsVelocity vel, in PhysicsMass mass) 
@@ -66,7 +77,7 @@ namespace Systems
                 m_ButtonClicked = false;
             }
 
-            if (m_Label != null)
+            if (m_Label != null && m_Colors.IsCreated)
             {
                 var str = new FixedString512Bytes();
                 var antString = m_AntString;

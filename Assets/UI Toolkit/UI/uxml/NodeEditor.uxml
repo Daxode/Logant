@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="/Assets/UI Toolkit/UI/Node.uss" />
-    <ui:VisualElement name="VisualElement" style="width: 100%; height: 100%; align-items: center;">
-        <ui:Label name="DebugText" text="Lorem Ipsum Dolor Sit Amet!" />
+    <ui:VisualElement name="VisualElement" style="width: 100%; height: 100%; align-items: flex-start;">
+        <ui:Label name="DebugText" text="Lorem Ipsum Dolor Sit Amet!" style="padding-left: 4px; -unity-text-align: middle-left; padding-right: 4px; padding-top: 4px; padding-bottom: 4px; margin-left: 4px; margin-right: 4px; margin-top: 4px; margin-bottom: 4px;" />
         <ui:VisualElement name="Foot" style="position: absolute; left: 0; bottom: 0; right: 0; flex-direction: row;">
             <ui:Button name="Jump" text="Lorem " />
         </ui:VisualElement>

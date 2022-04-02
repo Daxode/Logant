@@ -19,6 +19,28 @@
             "ScriptingBackend": 0,
             "Il2CppCompilerConfiguration": 1,
             "UseIncrementalGC": true
+        },
+        {
+            "$type": "Unity.Build.Common.EnableScriptDebugging, Unity.Build",
+            "WaitForManagedDebugger": false
+        },
+        {
+            "$type": "Unity.Build.Common.RunSettings, Unity.Build",
+            "RedirectOutput": false,
+            "BatchMode": false,
+            "NoGraphics": false,
+            "ExtraArguments": []
+        },
+        {
+            "$type": "Unity.Build.Classic.ClassicCodeStrippingOptions, Unity.Build.Classic",
+            "StripEngineCode": true,
+            "ManagedStrippingLevel": 1
+        },
+        {
+            "$type": "Unity.Build.Common.GeneralSettings, Unity.Build",
+            "ProductName": "Logant",
+            "CompanyName": "DaxMedia",
+            "Version": "0.1"
         }
     ]
 }
