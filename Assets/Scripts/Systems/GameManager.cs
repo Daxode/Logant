@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Data;
 using Systems.GameObjects;
@@ -9,10 +10,10 @@ using Unity.Physics;
 using Unity.Physics.Extensions;
 using Unity.Rendering;
 using Unity.Transforms;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEngine.InputSystem;
-using UnityEngine.UIElements.Experimental;
+using Material = UnityEngine.Material;
 
 namespace Systems
 {
@@ -34,11 +35,13 @@ namespace Systems
         }
 
         protected override void OnDestroy() => m_ResourceTypeToString.Dispose();
-
-        EntityQuery m_RenderMeshQuery;
+        
+        Sprite m_Sprite;
+        Material m_Material;
         protected override void OnStartRunning()
         {
-            var doc = EntityManager.GetComponentObject<UIDocument>(GetSingletonEntity<UIDocument>());
+            var docEntity = GetSingletonEntity<UIDocument>();
+            var doc = EntityManager.GetComponentObject<UIDocument>(docEntity);
 
             var button = doc.rootVisualElement.Q<Button>("Jump");
             if (button!=null)
@@ -49,10 +52,31 @@ namespace Systems
             }
 
             m_Label = doc.rootVisualElement.Q<Label>();
+
+            var renderer = EntityManager.GetComponentObject<SpriteRenderer>(docEntity);
+            //var background = doc.rootVisualElement.Q<VisualElement>("VectorOverlay").style.backgroundImage.value;
+            var circle = new Shape();
+            var pathProp = new PathProperties {Stroke = new Stroke {Color = Color.red, HalfThickness = 0.01f}};
+            circle.PathProps = pathProp;
+            VectorUtils.MakeCircleShape(circle, Vector2.zero, 1f);
+            var scene = new Scene{Root = new SceneNode{Shapes = new List<Shape> {circle}}};
+            var options = new VectorUtils.TessellationOptions
+            {
+                SamplingStepSize = 0.1f,
+                StepDistance = 0.01f,
+                
+            };
+            var geo = VectorUtils.TessellateScene(scene, options);
+            m_Sprite = VectorUtils.BuildSprite(geo, 1, VectorUtils.Alignment.BottomLeft, Vector2.zero, 64);
+            m_Material = new Material(Shader.Find("Unlit/Vector"));
+            renderer.sprite = m_Sprite;
         }
+        
 
         protected override void OnUpdate()
         {
+            VectorUtils.RenderSprite(m_Sprite, m_Material);
+            
             if (m_ButtonClicked)
             {
                 Entities.ForEach((ref PhysicsVelocity vel, in PhysicsMass mass) 
