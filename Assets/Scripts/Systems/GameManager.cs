@@ -24,19 +24,16 @@ namespace Systems
         NativeArray<FixedString64Bytes> m_ResourceTypeToString;
         FixedString64Bytes m_AntString;
         FixedString64Bytes m_ColorTagStart;
-        NativeHashMap<Entity, FixedString64Bytes> m_Colors;
+        EntityToColorSystem m_EntityToColorSystem;
         protected override void OnCreate()
         {
             m_ResourceTypeToString = new NativeArray<FixedString64Bytes>(Enum.GetNames(typeof(ResourceType)).Select(n=>new FixedString64Bytes(n)).ToArray(), Allocator.Persistent);
             m_AntString = new FixedString64Bytes("Ants");
             m_ColorTagStart = new FixedString64Bytes("<color=#");
+            m_EntityToColorSystem = World.GetExistingSystem<EntityToColorSystem>();
         }
 
-        protected override void OnDestroy()
-        {
-            m_ResourceTypeToString.Dispose();
-            m_Colors.Dispose();
-        }
+        protected override void OnDestroy() => m_ResourceTypeToString.Dispose();
 
         EntityQuery m_RenderMeshQuery;
         protected override void OnStartRunning()
@@ -54,22 +51,8 @@ namespace Systems
             m_Label = doc.rootVisualElement.Q<Label>();
         }
 
-        bool m_NotFoundColors = true;
-    
         protected override void OnUpdate()
         {
-            if (m_NotFoundColors)
-            {
-                var count = m_RenderMeshQuery.CalculateEntityCount();
-                if (count > 1)
-                {
-                    m_Colors = new NativeHashMap<Entity, FixedString64Bytes>(count, Allocator.Persistent);
-                    Entities.WithStoreEntityQueryInField(ref m_RenderMeshQuery).ForEach((Entity e, in RenderMesh renderMeshQuery) 
-                        => m_Colors[e] = new FixedString64Bytes(ColorUtility.ToHtmlStringRGB(renderMeshQuery.material.color))).WithoutBurst().Run();
-                    m_NotFoundColors = false;
-                }
-            }
-            
             if (m_ButtonClicked)
             {
                 Entities.ForEach((ref PhysicsVelocity vel, in PhysicsMass mass) 
@@ -77,12 +60,12 @@ namespace Systems
                 m_ButtonClicked = false;
             }
 
-            if (m_Label != null && m_Colors.IsCreated)
+            if (m_Label != null)
             {
                 var str = new FixedString512Bytes();
                 var antString = m_AntString;
                 var colorTagStart = m_ColorTagStart;
-                var colors = m_Colors;
+                var colors = m_EntityToColorSystem.EntityToColor;
                 Entities.ForEach((Entity e, in AntHillData hill) =>
                 {
                     str.Append(colorTagStart);
