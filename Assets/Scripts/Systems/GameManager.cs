@@ -1,20 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Data;
-using Systems.GameObjects;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Extensions;
-using Unity.Rendering;
-using Unity.Transforms;
-using Unity.VectorGraphics;
 using UnityEngine;
-using UnityEngine.Rendering;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
-using Material = UnityEngine.Material;
 
 namespace Systems
 {
@@ -100,7 +94,6 @@ namespace Systems
                 }).Run();
                 m_Label.text = str.ToString();
             }
-
 #if !UNITY_EDITOR
         if (Keyboard.current.escapeKey.isPressed) 
             Application.Quit();
