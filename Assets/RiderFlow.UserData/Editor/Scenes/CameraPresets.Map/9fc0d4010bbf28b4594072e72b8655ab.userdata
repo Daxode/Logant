@@ -1,0 +1,28 @@
+{
+  "4c407bd04fc372e408d7324f60c06184": {
+    "sceneGuid": "9fc0d4010bbf28b4594072e72b8655ab",
+    "uniqueCameraId": "4c407bd04fc372e408d7324f60c06184",
+    "name": "dwadwad",
+    "pointX": -2.55661559,
+    "pointY": 0.744947,
+    "pointZ": 2.310365,
+    "directionX": -0.0120898727,
+    "directionY": -0.9007992,
+    "directionZ": 0.0266058333,
+    "directionW": -0.433643818,
+    "zoom": 0.8660254
+  },
+  "79a18550d004fe5468ceef63eefa9439": {
+    "sceneGuid": "9fc0d4010bbf28b4594072e72b8655ab",
+    "uniqueCameraId": "79a18550d004fe5468ceef63eefa9439",
+    "name": "Kage",
+    "pointX": -4.44750643,
+    "pointY": 4.31053829,
+    "pointZ": -6.2641573,
+    "directionX": -0.228679463,
+    "directionY": 0.6133632,
+    "directionZ": -0.190587372,
+    "directionW": -0.7317822,
+    "zoom": 0.8660254
+  }
+}
