@@ -11,8 +11,7 @@ GameObject:
   - component: {fileID: 1163316477580434696}
   - component: {fileID: 1163316477580434699}
   - component: {fileID: 1163316477580434695}
-  - component: {fileID: -1798006265651962249}
-  - component: {fileID: -8501808879842069959}
+  - component: {fileID: 1829810261559842893}
   m_Layer: 0
   m_Name: Ant
   m_TagString: Untagged
@@ -229,7 +228,7 @@ MonoBehaviour:
         Tag07: 0
     m_SerializedVersion: 1
   m_SerializedVersion: 1
---- !u!114 &-1798006265651962249
+--- !u!114 &1829810261559842893
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -238,24 +237,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1163316477580434692}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61d41c5b791aedb41a8808d7a8365d35, type: 3}
+  m_Script: {fileID: 11500000, guid: 07160426c8b84be281f668761dd85ed5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &-8501808879842069959
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1163316477580434692}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41d1d74d042a49038db7e25b4192b78e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  id: 0
-  executionLine: 0
-  flags: 0
 --- !u!1 &1163316477835888377
 GameObject:
   m_ObjectHideFlags: 0
