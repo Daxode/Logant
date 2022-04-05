@@ -46,7 +46,7 @@ Shader "Unlit/DrawNodes"
                 o.vertex.y *= -1;
                 
                 o.uv = o.uv*0.5f+0.5f;
-                const uint id = 0;
+                const uint id = vertex.w;
                 o.uv += uint2(id%3u,id/3u);
                 o.uv *= 0.33f;
                 

@@ -6,6 +6,7 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEditor.Rendering;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 
 namespace Systems
@@ -18,20 +19,23 @@ namespace Systems
         Material m_DrawNodesMaterial;
         Camera m_Cam;
         Mesh m_NodeData;
-        NativeList<float3> m_NodesVerts;
+        NativeList<float4> m_NodesVerts;
         NativeList<int> m_NodesIndices;
+        NativeArray<VertexAttributeDescriptor> m_Layout;
         protected override void OnCreate()
         {
             m_DrawNodesMaterial = new Material(Shader.Find("Unlit/DrawNodes"));
             m_Cam = Camera.main;
             m_Texture = new RenderTexture(m_Cam.pixelWidth, m_Cam.pixelHeight, 0);
             m_NodeData = new Mesh();
-            m_NodesVerts = new NativeList<float3>(1024, Allocator.Persistent);
+            m_Layout = new NativeArray<VertexAttributeDescriptor>(new[] {new VertexAttributeDescriptor(dimension: 4)}, Allocator.Persistent);
+            m_NodesVerts = new NativeList<float4>(1024, Allocator.Persistent);
             m_NodesIndices = new NativeList<int>(1024, Allocator.Persistent);
         }
 
         protected override void OnDestroy()
         {
+            m_Layout.Dispose();
             m_NodesVerts.Dispose();
             m_NodesIndices.Dispose();
         }
@@ -52,10 +56,10 @@ namespace Systems
             var overlayStyle = doc.rootVisualElement.Q<VisualElement>("VectorOverlay").style;
             overlayStyle.backgroundImage = new StyleBackground {value = new Background {renderTexture = m_Texture}};
             
-            Entities.WithAll<ExecutionLineDataHolder>().ForEach((Translation t) =>
+            Entities.WithAll<ExecutionLineDataHolder>().ForEach((int entityInQueryIndex, in Translation t) =>
             {
                 var screenPoint = m_Cam.WorldToScreenPoint(t.Value);
-                AddNode(new float2(screenPoint.x,screenPoint.y),100);
+                AddNode(new float2(screenPoint.x,screenPoint.y),100, (uint)entityInQueryIndex+3);
             }).WithoutBurst().Run();
             
             UpdateNodeData();
@@ -63,11 +67,12 @@ namespace Systems
 
         public void UpdateNodeData()
         {
-            m_NodeData.SetVertices(m_NodesVerts.AsArray());
+            m_NodeData.SetVertexBufferParams(m_NodesVerts.Length, m_Layout);
+            m_NodeData.SetVertexBufferData(m_NodesVerts.AsArray(), 0,0, m_NodesVerts.Length);
             m_NodeData.SetIndices(m_NodesIndices.AsArray(), MeshTopology.Triangles,0);
         }
 
-        public void AddNode(float2 center, float radius)
+        public void AddNode(float2 center, float radius, uint id)
         {
             var index = m_NodesVerts.Length;
             m_NodesIndices.Add(0+index);
@@ -77,7 +82,7 @@ namespace Systems
             m_NodesIndices.Add(1+index);
             m_NodesIndices.Add(3+index);
 
-            var data = new float3(center, radius);
+            var data = new float4(center, radius, id);
             for (var i = 0; i<4; i++)
                 m_NodesVerts.Add(data);
         }
