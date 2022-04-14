@@ -21,21 +21,21 @@ namespace Systems
         Mesh m_NodeData;
         NativeList<float4> m_NodesVerts;
         NativeList<int> m_NodesIndices;
-        NativeArray<VertexAttributeDescriptor> m_Layout;
+        NativeArray<VertexAttributeDescriptor> m_NodeLayout;
         protected override void OnCreate()
         {
             m_DrawNodesMaterial = new Material(Shader.Find("Unlit/DrawNodes"));
             m_Cam = Camera.main;
             m_Texture = new RenderTexture(m_Cam.pixelWidth, m_Cam.pixelHeight, 0);
             m_NodeData = new Mesh();
-            m_Layout = new NativeArray<VertexAttributeDescriptor>(new[] {new VertexAttributeDescriptor(dimension: 4)}, Allocator.Persistent);
+            m_NodeLayout = new NativeArray<VertexAttributeDescriptor>(new[] {new VertexAttributeDescriptor(dimension: 4)}, Allocator.Persistent);
             m_NodesVerts = new NativeList<float4>(1024, Allocator.Persistent);
             m_NodesIndices = new NativeList<int>(1024, Allocator.Persistent);
         }
 
         protected override void OnDestroy()
         {
-            m_Layout.Dispose();
+            m_NodeLayout.Dispose();
             m_NodesVerts.Dispose();
             m_NodesIndices.Dispose();
         }
@@ -67,7 +67,7 @@ namespace Systems
 
         public void UpdateNodeData()
         {
-            m_NodeData.SetVertexBufferParams(m_NodesVerts.Length, m_Layout);
+            m_NodeData.SetVertexBufferParams(m_NodesVerts.Length, m_NodeLayout);
             m_NodeData.SetVertexBufferData(m_NodesVerts.AsArray(), 0,0, m_NodesVerts.Length);
             m_NodeData.SetIndices(m_NodesIndices.AsArray(), MeshTopology.Triangles,0);
         }
@@ -85,6 +85,7 @@ namespace Systems
             var data = new float4(center, radius, id);
             for (var i = 0; i<4; i++)
                 m_NodesVerts.Add(data);
+            
         }
         
         protected override void OnUpdate()
@@ -92,7 +93,8 @@ namespace Systems
             var oldRT = RenderTexture.active;
             RenderTexture.active = m_Texture;
             m_DrawNodesMaterial.SetPass(0);
-            //GL.Clear(false, true, Color.yellow);
+            //m_DrawNodesMaterial.SetPass(1);
+            GL.Clear(false, true, Color.yellow);
             Graphics.DrawMeshNow(m_NodeData, Matrix4x4.zero);
             RenderTexture.active = oldRT;
             

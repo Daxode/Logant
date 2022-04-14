@@ -24,12 +24,7 @@ Shader "Unlit/DrawNodes"
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
             };
-
-            // static const float2 v[6] =
-            // {
-            //     float2(-1, 1), float2( 1, 1), float2( 1,-1), // 0,1,2
-            //     float2( 1,-1), float2(-1,-1), float2(-1, 1),  // 2,3,0
-            // };
+            
             static const float2 v[4] =
             {
                 float2(-1, 1), float2( 1, 1),
@@ -73,4 +68,6 @@ Shader "Unlit/DrawNodes"
             ENDCG
         }
     }
+    
+    
 }
