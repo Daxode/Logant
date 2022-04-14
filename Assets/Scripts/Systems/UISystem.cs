@@ -1,10 +1,8 @@
 ﻿using Data;
-using Systems.GameObjects;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
@@ -94,11 +92,10 @@ namespace Systems
             RenderTexture.active = m_Texture;
             m_DrawNodesMaterial.SetPass(0);
             //m_DrawNodesMaterial.SetPass(1);
-            GL.Clear(false, true, Color.yellow);
+            //GL.Clear(false, true, Color.yellow);
             Graphics.DrawMeshNow(m_NodeData, Matrix4x4.zero);
             RenderTexture.active = oldRT;
-            
-            
+
             var uiData = this.GetSingleton<UIData>();
             m_DrawNodesMaterial.SetColor(k_ColorR, uiData.ColorR);
             m_DrawNodesMaterial.SetColor(k_ColorG, uiData.ColorG);
