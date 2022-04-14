@@ -20,9 +20,6 @@ namespace Systems
             base.OnCreate();
             m_ActivePath = new PolylinePath();
             m_ActivePath.AddPoints(new Vector3(0,2), new Vector3(1,2));
-            var lensDistort = Object.FindObjectOfType<LensDistortion>();
-            if (lensDistort != null && lensDistort.IsActive()) 
-                m_DistortionSetting = lensDistort;
         }
 
         const float k_NodeRadius = .7f;
@@ -36,17 +33,15 @@ namespace Systems
             if (!m_ActiveNodeLocation.HasValue) return;
             var dir = math.normalizesafe(pTo - m_ActiveNodeLocation.Value);
             var pFrom = m_ActiveNodeLocation.Value + dir * k_NodeRadius;
-            pTo = m_ActiveNodeLocation.Value + dir * math.max(k_NodeRadius+0.01f,math.length(pTo - m_ActiveNodeLocation.Value));
-            m_ActivePathValid = !math.all(pFrom == pTo);
+            pTo = m_ActiveNodeLocation.Value + dir * math.max(k_NodeRadius+0.01f,math.length(pTo - m_ActiveNodeLocation.Value)-.1f);
+            m_ActivePathValid = math.any(pFrom != pTo);
             m_ActivePath.SetPoint(0, pFrom);
             m_ActivePath.SetPoint(1, pTo);
         }
 
         protected override void OnUpdate()
         {
-            float3 viewport = Camera.main.ScreenToViewportPoint(Mouse.current.position.ReadValue());
-            var uv = new float3(DistortUV(viewport.xy), 1);
-            var ray = Camera.main.ViewportPointToRay(uv);
+            var ray = ScreenToRaySystem.ScreenToRay(Mouse.current.position.ReadValue());
             float3 point = ray.GetPoint((-ray.origin.y) / ray.direction.y);
             if (Mouse.current.leftButton.wasPressedThisFrame) {
                 Debug.Log("Pressed");
@@ -83,10 +78,16 @@ namespace Systems
                 if (m_ActiveNodeLocation.HasValue&&m_ActivePathValid)
                 {   
                     Draw.Push();
-                    Draw.Color = new Color(0.93f, 1f, 0.96f, 0.69f);
+                    // Draw.BlendMode = ShapesBlendMode.Opaque;
+                    // Draw.Color = new Color(0.2f, 0.2f, 0.3f, 1f);
                     Draw.Polyline(m_ActivePath);
-                    for (int i = 0; i < m_ActivePath.Count; i++)
-                        Draw.Disc(m_ActivePath[i].point,rotateUp,.2f);
+                    
+                    // Arrow
+                    var dirWithSize = m_ActivePath[1].point - m_ActivePath[0].point;
+                    var dir = math.normalizesafe(dirWithSize);
+                    var r = Quaternion.LookRotation(dir)*rotateUp;
+                    Draw.Pie((float3)m_ActivePath[0].point+dir*(math.length(dirWithSize)+.1f), r, .2f, -math.PI/2f-.5f,-math.PI/2f+.5f);
+                    
                     Draw.Pop();
                 }
 
@@ -94,62 +95,6 @@ namespace Systems
                 Entities.WithAll<ExecutionLineDataHolder>().ForEach((in Translation t) 
                     => Draw.Ring(t.Value, rotateUp, 0.7f)).WithoutBurst().Run();
             }
-        }
-
-        DistortionSetting? m_DistortionSetting;
-
-        public struct DistortionSetting
-        {
-            public float4 centerScale;
-            public float4 amount;
-            public DistortionSetting(float4 centerScale, float4 amount)
-            {
-                this.centerScale = centerScale;
-                this.amount = amount;
-            }
-
-            public static implicit operator DistortionSetting(LensDistortion d)
-            {
-                var amount = 1.6f * math.max(math.abs(d.intensity.value * 100f), 1f);
-                var theta = math.radians(math.min(160f, amount));
-                var sigma = 2f * math.tan(theta * 0.5f);
-                var center = d.center.value * 2f - Vector2.one;
-                return new DistortionSetting(
-                    new float4(
-                        center.x, center.y,
-                        math.max(d.xMultiplier.value, 1e-4f), 
-                        math.max(d.yMultiplier.value, 1e-4f)
-                        ), 
-                    new float4(
-                        d.intensity.value >= 0f ? theta : 1f / theta, 
-                        sigma, 1f / d.scale.value, 
-                        d.intensity.value * 100f
-                        )
-                    );
-            }
-        }
-
-        float2 DistortUV(float2 uv)
-        {
-            if (!m_DistortionSetting.HasValue) return uv;
-            var distortionSetting = m_DistortionSetting.Value;
-            
-            // Actual distortion code
-            uv = (uv - 0.5f) * distortionSetting.amount.z + 0.5f;
-            var ruv = distortionSetting.centerScale.zw * (uv - 0.5f - distortionSetting.centerScale.xy);
-            var ru = math.length(ruv);
-
-            if (distortionSetting.amount.w > 0.0f)
-            {
-                float wu = ru * distortionSetting.amount.x;
-                ru = math.tan(wu) * (1.0f / (ru * distortionSetting.amount.y));
-                uv += ruv * (ru - 1.0f);
-            } else {
-                ru = (1.0f / ru) * distortionSetting.amount.x * math.atan(ru * distortionSetting.amount.y);
-                uv += ruv * (ru - 1.0f);
-            }
-            
-            return uv;
         }
     }
 }
