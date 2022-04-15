@@ -35,6 +35,8 @@ namespace Systems
     [WorldSystemFilter(WorldSystemFilterFlags.Default|WorldSystemFilterFlags.Editor)]
     public partial class NodeGraph : SystemBaseDraw
     {
+        
+        
         PolylinePath m_ActivePath;
         bool m_ActivePathValid;
         protected override void OnCreate()
@@ -72,14 +74,17 @@ namespace Systems
             // Construct path
             m_ActivePath.ClearAllPoints();
             m_ActivePath.AddPoint(pFrom, 1);
-            //m_ActivePath.LineTo(pTo,100);
-            m_ActivePath.BezierTo(pFrom+dirToDest,pTo-3,pTo,100);
+            m_ActivePath.LineTo(pTo,100);
+            ThinAtArrowEndPoint(pTo);
+        }
 
-            for (var i = m_ActivePath.Count-1; i >= 0; i--)
+        void ThinAtArrowEndPoint(float3 ArrowEndPoint)
+        {
+            for (var i = m_ActivePath.Count - 1; i >= 0; i--)
             {
-                var dist = math.distance(m_ActivePath[i].point, pTo);
-                m_ActivePath.SetThickness(i, math.clamp(dist*10,.05f,1));
-                if (dist>k_ArrowRadius)
+                var dist = math.distance(m_ActivePath[i].point, ArrowEndPoint);
+                m_ActivePath.SetThickness(i, math.clamp(dist * 10, .05f, 1));
+                if (dist > k_ArrowRadius)
                     break;
             }
         }
