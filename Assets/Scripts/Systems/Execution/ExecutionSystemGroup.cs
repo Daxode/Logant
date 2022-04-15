@@ -1,4 +1,5 @@
-﻿using Unity.Entities;
+﻿using Data;
+using Unity.Entities;
 
 namespace Systems.Execution
 {
@@ -8,6 +9,9 @@ namespace Systems.Execution
     {
         protected override void OnUpdate()
         {
+            if (TryGetSingleton<GlobalData>(out var globalData) && !globalData.HasStarted) 
+                return;
+            
             base.OnUpdate();
         }
     }

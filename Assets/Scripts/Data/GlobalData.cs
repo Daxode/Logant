@@ -7,5 +7,6 @@ namespace Data
     public struct GlobalData : IComponentData
     {
         public float SpawnInterval;
+        public bool HasStarted;
     }
 }

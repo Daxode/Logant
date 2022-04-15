@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Data;
 using Unity.Collections;
@@ -28,6 +27,10 @@ namespace Systems
         {
             if (m_SpawnTimeLeft < 0)
             {
+                var globalData = GetSingleton<GlobalData>();
+                m_SpawnTimeLeft = globalData.SpawnInterval;
+                if (!globalData.HasStarted) return;
+                
                 var spawnedEntitiesBuffer = m_SpawnedEntitiesBuffer;
                 var ecb = m_EntityCommandBufferSystem.CreateCommandBuffer();
                 Entities.ForEach((ref AntHillData data, ref RandomHolder randomHolder, in Translation translation, in AntPrefab ant) =>
@@ -46,7 +49,6 @@ namespace Systems
                         data.Current = data.Total;
                     }
                 }).Run();
-                m_SpawnTimeLeft = GetSingleton<GlobalData>().SpawnInterval;
             } else m_SpawnTimeLeft -= Time.DeltaTime;
         }
 

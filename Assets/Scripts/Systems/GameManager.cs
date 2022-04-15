@@ -14,7 +14,7 @@ namespace Systems
 {
     public partial class GameManager : SystemBase
     {
-        bool m_ButtonClicked;
+        bool m_JumpPressed;
         Label m_Label;
 
         NativeArray<FixedString64Bytes> m_ResourceTypeToString;
@@ -37,23 +37,38 @@ namespace Systems
             var doc = EntityManager.GetComponentObject<UIDocument>(docEntity);
 
             // Setup UI
-            var button = doc.rootVisualElement.Q<Button>("Jump");
-            if (button!=null)
+            var jumpBtn = doc.rootVisualElement.Q<Button>("Jump");
+            if (jumpBtn!=null)
             {
-                button.text = "<i>Jump</i> with <b>this</b>";
-                button.clicked += () => m_ButtonClicked = true;
-                button.AddToClassList("jump");
+                jumpBtn.text = "<i>Jump</i> with <b>this</b>";
+                jumpBtn.clicked += () => m_JumpPressed = true;
+                jumpBtn.AddToClassList("jump");
             }
+            
+            var startBtn = doc.rootVisualElement.Q<Button>("Start");
+            if (startBtn!=null)
+            {
+                startBtn.clicked += () =>
+                {
+                    if (TryGetSingleton<GlobalData>(out var gd))
+                    {
+                        gd.HasStarted = true;
+                        SetSingleton(gd);
+                    }
+                };
+                startBtn.AddToClassList("Start");
+            }
+            
             m_Label = doc.rootVisualElement.Q<Label>();
         }
         
         protected override void OnUpdate()
         { 
-            if (m_ButtonClicked)
+            if (m_JumpPressed)
             {
                 Entities.ForEach((ref PhysicsVelocity vel, in PhysicsMass mass) 
                     => vel.ApplyLinearImpulse(in mass, math.up() * 0.5f)).Run();
-                m_ButtonClicked = false;
+                m_JumpPressed = false;
             }
 
             if (m_Label != null)
