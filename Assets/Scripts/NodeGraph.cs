@@ -44,9 +44,10 @@ namespace Systems
         }
 
         const float k_NodeRadius = .7f;
-        const float arrowRadius = .25f;
+        const float k_ArrowRadius = .3f;
         
         float3? m_ActiveNodeLocation;
+        // float? m_ActiveNodeRotation;
         public void ActiveNodeSet(float3 nodeLocation) => m_ActiveNodeLocation = nodeLocation;
         public void ActiveNodeDeactivate()
         {
@@ -58,11 +59,11 @@ namespace Systems
         {
             // Create Path
             if (!m_ActiveNodeLocation.HasValue) return;
-            var activeNodeToDestination = destination - m_ActiveNodeLocation.Value;
-            var dirNodeToDest = math.normalizesafe(activeNodeToDestination);
-            var endLengthMinusArrow = math.max(k_NodeRadius+0.01f,math.length(activeNodeToDestination) - arrowRadius);
-            var pTo = m_ActiveNodeLocation.Value + dirNodeToDest * endLengthMinusArrow;
-            var pFrom = m_ActiveNodeLocation.Value + dirNodeToDest * k_NodeRadius;
+            var toDest = destination - m_ActiveNodeLocation.Value;
+            var dirToDest = math.normalizesafe(toDest);
+            var destLengthMinusArrow = math.max(k_NodeRadius+0.01f,math.length(toDest));
+            var pTo = m_ActiveNodeLocation.Value + dirToDest * destLengthMinusArrow;
+            var pFrom = m_ActiveNodeLocation.Value + dirToDest * k_NodeRadius;
 
             // If valid path
             m_ActivePathValid = math.any(pFrom != pTo);
@@ -70,8 +71,17 @@ namespace Systems
             
             // Construct path
             m_ActivePath.ClearAllPoints();
-            m_ActivePath.AddPoint(pFrom);
-            m_ActivePath.AddPoint(pTo);
+            m_ActivePath.AddPoint(pFrom, 1);
+            //m_ActivePath.LineTo(pTo,100);
+            m_ActivePath.BezierTo(pFrom+dirToDest,pTo-3,pTo,100);
+
+            for (var i = m_ActivePath.Count-1; i >= 0; i--)
+            {
+                var dist = math.distance(m_ActivePath[i].point, pTo);
+                m_ActivePath.SetThickness(i, math.clamp(dist*10,.05f,1));
+                if (dist>k_ArrowRadius)
+                    break;
+            }
         }
 
         protected override void DrawShapes(Camera cam)
@@ -81,23 +91,22 @@ namespace Systems
                 // Setttings
                 Draw.ZTest = CompareFunction.Always;
                 Draw.BlendMode = ShapesBlendMode.Transparent;
+                Draw.DiscGeometry = DiscGeometry.Flat2D;
                 Draw.Thickness = 0.1f;
 
                 // Default constants
                 var rotateUp = Quaternion.Euler(90, 0, 0);
-                var blueHSV = RGBToHSV(0f, 1f, 0.8f);
-                var purpleHSV = RGBToHSV(0f, 0.55f, 0.85f);
-
+                
+                // Draw Active Arrow Path
                 if (m_ActivePathValid)
                 {
-                    SetLinearGradient(m_ActivePath, blueHSV, purpleHSV);
-                    Draw.Polyline(m_ActivePath);
+                    SetLinearGradientHSV(m_ActivePath, new Color(0f, 1f, 0.8f), new Color(0f, 0.5f, 1f));
 
-                    // Arrow
+                    Draw.Polyline(m_ActivePath, PolylineJoins.Round);
                     DrawArrowHead(
                         m_ActivePath[m_ActivePath.Count-2].point,
                         m_ActivePath[m_ActivePath.Count-1].point,
-                        arrowRadius, rotateUp, .6f, arrowRadius,m_ActivePath[m_ActivePath.Count-1].color);
+                        .15f, k_ArrowRadius, m_ActivePath[m_ActivePath.Count-1].color);
                 }
 
                 using (Draw.ColorScope)
@@ -109,15 +118,15 @@ namespace Systems
             }
         }
 
-        static void DrawArrowHead(float3 startP, float3 endP, float overshoot, Quaternion rotation, float width, float radius, DiscColors col)
+        static void DrawArrowHead(float3 startP, float3 endP, float radius, float length, Color col)
         {
             var dirWithSize = endP - startP;
             var dir = math.normalizesafe(dirWithSize);
-            var rotationWithDir = Quaternion.LookRotation(dir)*rotation;
-            Draw.Pie(startP + dir * (math.length(dirWithSize) + overshoot), rotationWithDir, radius, -math.PI / 2f - width, -math.PI / 2f + width, col);
+            var rotationWithDir = Quaternion.LookRotation(dir);
+            var arrowLocation = startP + dir * (math.length(dirWithSize)-length);
+            Draw.Cone(arrowLocation, rotationWithDir, radius, length, col);
         }
         
-        static float3 RGBToHSV(float r, float g, float b) => RGBToHSV(new Color(r, g, b));
         static float3 RGBToHSV(Color color)
         {
             var blueHSV = float3.zero;
@@ -125,13 +134,13 @@ namespace Systems
             return blueHSV;
         }
 
-        static void SetLinearGradient(PolylinePath p, float3 startColorHSV, float3 endColorHSV)
+        static void SetLinearGradientHSV(PolylinePath p, Color startColor, Color endColor) => SetLinearGradientHSV(p, RGBToHSV(startColor), RGBToHSV(endColor));
+        static void SetLinearGradientHSV(PolylinePath p, float3 startColorHSV, float3 endColorHSV)
         {
-            for (int i = 0; i < p.Count; i++)
+            for (var i = 0; i < p.Count; i++)
             {
                 var color = math.lerp(startColorHSV, endColorHSV, i / (float) (p.Count - 1));
                 p.SetColor(i, Color.HSVToRGB(color.x, color.y, color.z));
-                // Draw.Sphere(p[i].point, 0.05f, p[i].color);
             }
         }
     }
