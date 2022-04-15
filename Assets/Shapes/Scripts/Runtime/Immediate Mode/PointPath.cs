@@ -10,7 +10,11 @@ namespace Shapes {
 		
 		protected List<T> path = new List<T>();
 		public int Count => path.Count;
-		public T LastPoint => path[path.Count - 1];
+		public T LastPoint
+		{
+			get => path[path.Count - 1];
+			set => path[path.Count - 1] = value;
+		}
 
 		protected void OnSetFirstDataPoint() {
 			hasData = true;

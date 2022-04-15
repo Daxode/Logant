@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Unity.Collections;
 using UnityEngine;
 
 // Shapes © Freya Holmér - https://twitter.com/FreyaHolmer/
@@ -33,6 +34,12 @@ namespace Shapes {
 		public void SetColor( int index, Color color ) {
 			PolylinePoint p = path[index];
 			p.color = color;
+			SetPoint( index, p );
+		}
+		
+		public void SetThickness( int index, float thickness ) {
+			PolylinePoint p = path[index];
+			p.thickness = thickness;
 			SetPoint( index, p );
 		}
 
@@ -85,6 +92,16 @@ namespace Shapes {
 		public void BezierTo( Vector3 startTangent, Vector3 endTangent, Vector3 end, int pointCount ) {
 			if( CheckCanAddContinuePoint() ) return;
 			AddPoints( ShapesMath.CubicBezierPointsSkipFirstMatchStyle( LastPoint, LastPoint.point, startTangent, endTangent, end, pointCount ) );
+		}
+		
+		public void LineTo(Vector3 end, int pointCount) {
+			if( CheckCanAddContinuePoint() ) return;
+			var start = LastPoint.point;
+			var arr = new NativeArray<Vector3>(pointCount-1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+			for (var i = 0; i < pointCount-1; i++)
+				arr[i] = Vector3.Lerp(start, end, (i+1)/(float)(pointCount-1));
+			AddPoints(arr);
+			arr.Dispose();
 		}
 
 		// POLYLINEPOINT ENDPOINTS:
