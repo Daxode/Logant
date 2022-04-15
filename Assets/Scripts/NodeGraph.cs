@@ -14,28 +14,47 @@ namespace Systems
     public partial class UISystem : SystemBase
     {
         NodeGraph m_Graph;
-        protected override void OnCreate() => m_Graph = World.GetExistingSystem<NodeGraph>();
-
-        bool notRun = true;
+        EntityToColorSystem m_EntityToColor;
+        protected override void OnCreate()
+        {
+            m_Graph = World.GetExistingSystem<NodeGraph>();
+            m_EntityToColor = World.GetExistingSystem<EntityToColorSystem>();
+        }
         
+        EntityQuery m_NodeQuery;
+        NativeArray<Entity> m_NodeEntities;
+        void UpdateNodes()
+        {
+            m_Graph.ClearNodes();
+            if (m_NodeEntities.IsCreated)
+                m_NodeEntities.Dispose();
+            m_NodeEntities = m_NodeQuery.ToEntityArray(Allocator.Persistent);
+            Entities.WithStoreEntityQueryInField(ref m_NodeQuery).WithAll<ExecutionLineDataHolder>().ForEach((in Translation t) 
+                => m_Graph.AddNode(new Node(t.Value, .7f))).WithoutBurst().Run();
+            
+        }
+        
+        public bool dirty = true;
         protected override void OnUpdate()
         {
-            if (notRun)
-            {
-                Entities.WithAll<ExecutionLineDataHolder>().ForEach((in Translation t) 
-                    => m_Graph.AddNode(new Node(t.Value, .7f))).WithoutBurst().Run();
-                notRun = false;
+            if (dirty) {
+                UpdateNodes();
+                dirty = false;
             }
             
             var ray = ScreenToRaySystem.ScreenToRay(Mouse.current.position.ReadValue());
             float3 point = ray.GetPoint(-ray.origin.y / ray.direction.y);
             if (Mouse.current.leftButton.wasPressedThisFrame) {
                 Debug.Log("Pressed");
-                m_Graph.SetClosestToThisNodeActive(point);
+                m_Graph.StartNodeActive(point);
             } else if (Mouse.current.leftButton.wasReleasedThisFrame) {
                 Debug.Log("Released");
-                m_Graph.ActiveNodeDeactivate();
+                m_Graph.EndNodeActive(point);
             }
+
+            if (Mouse.current.rightButton.wasPressedThisFrame)
+                foreach (var (fromI, toI) in m_Graph.Nodes)
+                    Debug.Log($"From: {m_NodeEntities[fromI]}_{m_EntityToColor.EntityToColor[m_NodeEntities[fromI]]} - To: {m_NodeEntities[toI]}_{m_EntityToColor.EntityToColor[m_NodeEntities[toI]]}");
 
             m_Graph.DrawToPoint(point);
         }
@@ -58,11 +77,13 @@ namespace Systems
         bool m_ActivePathEnabled;
         PolylinePath m_ActivePath;
         NativeList<Node> m_Nodes;
+        NativeList<(int, int)> nodePairs;
         protected override void OnCreate()
         {
             base.OnCreate();
             m_ActivePath = new PolylinePath();
             m_Nodes = new NativeList<Node>(100, Allocator.Persistent);
+            nodePairs = new NativeList<(int, int)>(100, Allocator.Persistent);
         }
 
         protected override void OnDestroy()
@@ -71,14 +92,21 @@ namespace Systems
             m_Nodes.Dispose();
         }
 
+        public NativeArray<(int, int)> Nodes => nodePairs.AsArray();
+
+        public void ClearNodes() => m_Nodes.Clear();
         public void AddNode(Node node) => m_Nodes.Add(node);
 
         const float k_ArrowRadius = .3f;
 
         int? m_ActiveNodeIndex;
-        public void SetClosestToThisNodeActive(float3 position) => m_ActiveNodeIndex = TryGetHitNodeIndex(position);
-        public void ActiveNodeDeactivate()
+        public void StartNodeActive(float3 position) => m_ActiveNodeIndex = TryGetHitNodeIndex(position);
+        public void EndNodeActive(float3 position)
         {
+            var getNode = TryGetHitNodeIndex(position);
+            if (getNode.HasValue && getNode != m_ActiveNodeIndex && m_ActiveNodeIndex.HasValue) 
+                nodePairs.Add((m_ActiveNodeIndex.Value, getNode.Value));
+
             m_ActivePathEnabled = false;
             m_ActiveNodeIndex = null;
         }
@@ -113,6 +141,8 @@ namespace Systems
                 var dirDestToMouse = math.normalizesafe(destToMouse);
                 var pTo = destNode.Position + dirDestToMouse * destNode.Radius;
 
+                var endStrength = math.dot(dirActiveToMouse, dirDestToMouse) * .5f + .5f;
+                
                 // If valid path
                 m_ActivePathEnabled = math.any(pFrom != pTo);
                 if (!m_ActivePathEnabled) return;
@@ -120,7 +150,7 @@ namespace Systems
                 // Construct path
                 m_ActivePath.ClearAllPoints();
                 m_ActivePath.AddPoint(pFrom);
-                m_ActivePath.BezierTo(pFrom+dirActiveToMouse,pTo+dirDestToMouse,pTo,100);
+                m_ActivePath.BezierTo(pFrom+dirActiveToMouse*(1+endStrength),pTo+dirDestToMouse*(1+endStrength*2),pTo,100);
                 ThinAtArrowEndPoint(pTo);
             }
             else
