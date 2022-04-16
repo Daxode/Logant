@@ -5,11 +5,15 @@ using UnityEngine;
 
 namespace Data
 {
-    [UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
     public partial class EntityToColorSystem : SystemBase
     {
+        protected override void OnCreate()
+        {
+            RequireForUpdate(GetEntityQuery(typeof(ExecutionLineDataHolder)));
+        }
+
         public NativeHashMap<Entity, FixedString64Bytes> EntityToColor;
-        
         EntityQuery m_RenderMeshQuery;
         protected override void OnStartRunning()
         {
@@ -17,8 +21,7 @@ namespace Data
             Entities.WithStoreEntityQueryInField(ref m_RenderMeshQuery).ForEach((Entity e, in RenderMesh renderMeshQuery) 
                 => EntityToColor[e] = new FixedString64Bytes(ColorUtility.ToHtmlStringRGB(renderMeshQuery.material.color))).WithoutBurst().Run();
         }
-
         protected override void OnUpdate() {}
-        protected override void OnDestroy() => EntityToColor.Dispose();
+        protected override void OnStopRunning() => EntityToColor.Dispose();
     }
 }

@@ -30,11 +30,9 @@ namespace Systems
         }
 
         protected override void OnDestroy() => m_ResourceTypeToString.Dispose();
-        
         protected override void OnStartRunning()
         {
-            var docEntity = GetSingletonEntity<UIDocument>();
-            var doc = EntityManager.GetComponentObject<UIDocument>(docEntity);
+            var doc = EntityManager.GetComponentObject<UIDocument>(GetSingletonEntity<UIDocument>());
 
             // Setup UI
             var jumpBtn = doc.rootVisualElement.Q<Button>("Jump");
@@ -63,7 +61,7 @@ namespace Systems
         }
         
         protected override void OnUpdate()
-        { 
+        {
             if (m_JumpPressed)
             {
                 Entities.ForEach((ref PhysicsVelocity vel, in PhysicsMass mass) 
@@ -71,7 +69,7 @@ namespace Systems
                 m_JumpPressed = false;
             }
 
-            if (m_Label != null)
+            if (m_Label != null && m_EntityToColorSystem.EntityToColor.IsCreated)
             {
                 var str = new FixedString512Bytes();
                 var antString = m_AntString;
