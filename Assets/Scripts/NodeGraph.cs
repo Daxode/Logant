@@ -130,6 +130,19 @@ namespace Systems
             
             return null;
         }
+        
+        int? TryGetHitArrowIndex(float3 pos)
+        {
+            for (var i = 0; i < m_Arrows.Count; i++)
+            {
+                var bezier = m_Arrows[i];
+                var distance = HandleUtility.DistancePointBezier(pos, bezier[0].point, bezier[3].point, bezier[1].point, bezier[2].point);
+                if (distance < 0.1f)
+                    return i;
+            }
+
+            return null;
+        }
 
         public void UpdateNodeDraw(float3 destination)
         {
