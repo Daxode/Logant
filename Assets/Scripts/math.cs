@@ -2,6 +2,7 @@
 using Unity.Collections;
 using UnityEngine;
 using Unity.Mathematics;
+using Random = Unity.Mathematics.Random;
 
 public static class meth
 {
@@ -85,5 +86,18 @@ public static class meth
 
         return roots;
     }
+    
+    [BurstCompile]
+    public static float3 GetDirectionInDirection(this ref Random random, float3 dir, float angle)
+    {
+        var rot = quaternion.AxisAngle(random.NextFloat3Direction(), angle);
+        return  math.mul(rot, dir);
+    }
 
+    [BurstCompile]
+    public static float3 GetFlatDirectionInDirection(this ref Random random, float3 dir, float angle)
+    {
+        var rot = quaternion.AxisAngle(math.up(), random.NextFloat(-angle,angle));
+        return  math.mul(rot, dir);
+    }
 }

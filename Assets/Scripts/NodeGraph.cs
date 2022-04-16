@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using System.Collections.Generic;
+using Data;
 using Shapes;
 using Unity.Collections;
 using Unity.Entities;
@@ -7,6 +8,8 @@ using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using HandleUtility = UnityEditor.HandleUtility;
+using Random = Unity.Mathematics.Random;
 
 namespace Systems
 {
@@ -79,16 +82,21 @@ namespace Systems
     [WorldSystemFilter(WorldSystemFilterFlags.Default|WorldSystemFilterFlags.Editor)]
     public partial class NodeGraph : SystemBaseDraw
     {
+        List<PolylinePath> m_Arrows;
+        
         bool m_ActivePathEnabled;
         PolylinePath m_ActivePath;
         NativeList<Node> m_Nodes;
         NativeList<(int, int, int)> m_NodePairs;
+        Random random;
         protected override void OnCreate()
         {
             base.OnCreate();
             m_ActivePath = new PolylinePath();
             m_Nodes = new NativeList<Node>(100, Allocator.Persistent);
             m_NodePairs = new NativeList<(int, int, int)>(100, Allocator.Persistent);
+            m_Arrows = new List<PolylinePath>(100);
+            random.InitState();
         }
 
         protected override void OnDestroy()
@@ -112,11 +120,34 @@ namespace Systems
         public void EndNodeDraw(float3 position)
         {
             var getNode = TryGetHitNodeIndex(position);
-            if (getNode.HasValue && getNode != m_ActiveNodeIndex && m_ActiveNodeIndex.HasValue) 
+            if (getNode.HasValue && getNode != m_ActiveNodeIndex && m_ActiveNodeIndex.HasValue)
+            {
                 m_NodePairs.Add((m_ActiveNodeIndex.Value, getNode.Value, m_PathID));
+                m_Arrows.Add(GetPathForBezier(ref random,m_Nodes[m_ActiveNodeIndex.Value], m_Nodes[getNode.Value]));
+            }
 
             m_ActivePathEnabled = false;
             m_ActiveNodeIndex = null;
+        }
+        
+        static PolylinePath GetPathForBezier(ref Random random, in Node start, in Node end)
+        {
+            var path = new PolylinePath();
+            var startToEnd = end.Position - start.Position;
+            var dirStartToEnd = math.normalize(startToEnd);
+            var rndDirStart = random.GetFlatDirectionInDirection(dirStartToEnd, .8f);
+            var rndDirEnd = random.GetFlatDirectionInDirection(-dirStartToEnd, .8f);
+
+            var pFrom = start.Position + rndDirStart * start.Radius;
+            var pTo = end.Position + rndDirEnd * end.Radius;
+
+            // Construct path
+            path.AddPoint(pFrom);
+            path.BezierTo(pFrom+rndDirStart,pTo+rndDirEnd,pTo,100);
+            ThinAtArrowEndPoint(path, pTo);
+            
+            SetLinearGradientHSV(path, new Color(1f, 0.28f, 0.11f), new Color(1f, 0.85f, 0.08f));
+            return path;
         }
 
         int? TryGetHitNodeIndex(float3 position)
@@ -236,6 +267,15 @@ namespace Systems
                         m_ActivePath[m_ActivePath.Count-2].point,
                         m_ActivePath[m_ActivePath.Count-1].point,
                         .15f, k_ArrowRadius, m_ActivePath[m_ActivePath.Count-1].color);
+                }
+
+                foreach (var arrow in m_Arrows)
+                {
+                    Draw.Polyline(arrow);
+                    DrawArrowHead(
+                        arrow[arrow.Count-2].point,
+                        arrow[arrow.Count-1].point,
+                        .15f, k_ArrowRadius, arrow[arrow.Count-1].color);
                 }
             }
         }
