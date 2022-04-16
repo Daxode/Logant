@@ -12,13 +12,8 @@ namespace Systems
     [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
     public partial class AntHillSpawnSystem : SystemBase
     {
-        EndFixedStepSimulationEntityCommandBufferSystem m_EntityCommandBufferSystem;
         NativeArray<Entity> m_SpawnedEntitiesBuffer;
-        protected override void OnCreate()
-        {
-            m_EntityCommandBufferSystem = World.GetExistingSystem<EndFixedStepSimulationEntityCommandBufferSystem>();
-            m_SpawnedEntitiesBuffer = new NativeArray<Entity>(k_BatchCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-        }
+        protected override void OnCreate() => m_SpawnedEntitiesBuffer = new NativeArray<Entity>(k_BatchCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
         protected override void OnDestroy() => m_SpawnedEntitiesBuffer.Dispose();
 
         float m_SpawnTimeLeft;
@@ -32,7 +27,7 @@ namespace Systems
                 if (!globalData.HasStarted) return;
                 
                 var spawnedEntitiesBuffer = m_SpawnedEntitiesBuffer;
-                var ecb = m_EntityCommandBufferSystem.CreateCommandBuffer();
+                var ecb = new EntityCommandBuffer(Allocator.Temp);
                 Entities.ForEach((ref AntHillData data, ref RandomHolder randomHolder, in Translation translation, in AntPrefab ant) =>
                 {
                     if (data.Total >= data.Current + k_BatchCount)
@@ -49,6 +44,8 @@ namespace Systems
                         data.Current = data.Total;
                     }
                 }).Run();
+                ecb.Playback(EntityManager);
+                ecb.Dispose();
             } else m_SpawnTimeLeft -= Time.DeltaTime;
         }
 

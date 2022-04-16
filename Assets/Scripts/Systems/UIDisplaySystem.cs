@@ -7,16 +7,12 @@ using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Extensions;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 namespace Systems
 {
-    public partial class GameManager : SystemBase
+    public partial class UIDisplaySystem : SystemBase
     {
-        bool m_JumpPressed;
-        Label m_Label;
-
         NativeArray<FixedString64Bytes> m_ResourceTypeToString;
         FixedString64Bytes m_AntString;
         FixedString64Bytes m_ColorTagStart;
@@ -28,8 +24,10 @@ namespace Systems
             m_ColorTagStart = new FixedString64Bytes("<color=#");
             m_EntityToColorSystem = World.GetExistingSystem<EntityToColorSystem>();
         }
-
         protected override void OnDestroy() => m_ResourceTypeToString.Dispose();
+        
+        bool m_JumpPressed;
+        Label m_Label;
         protected override void OnStartRunning()
         {
             var doc = EntityManager.GetComponentObject<UIDocument>(GetSingletonEntity<UIDocument>());
@@ -39,39 +37,54 @@ namespace Systems
             if (jumpBtn!=null)
             {
                 jumpBtn.text = "<i>Jump</i> with <b>this</b>";
-                jumpBtn.clicked += () => m_JumpPressed = true;
+                jumpBtn.clicked += OnJumpBtnOnClicked;
                 jumpBtn.AddToClassList("jump");
             }
             
             var startBtn = doc.rootVisualElement.Q<Button>("Start");
             if (startBtn!=null)
             {
-                startBtn.clicked += () =>
-                {
-                    if (TryGetSingleton<GlobalData>(out var gd))
-                    {
-                        gd.HasStarted = true;
-                        SetSingleton(gd);
-                    }
-                };
+                startBtn.clicked += OnStartBtnOnClicked;
                 startBtn.AddToClassList("Start");
             }
             
             m_Label = doc.rootVisualElement.Q<Label>();
         }
-        
+
+        protected override void OnStopRunning()
+        {
+            var doc = EntityManager.GetComponentObject<UIDocument>(GetSingletonEntity<UIDocument>());
+            
+            var jumpBtn = doc.rootVisualElement.Q<Button>("Jump");
+            if (jumpBtn!=null) 
+                jumpBtn.clicked -= OnJumpBtnOnClicked;
+
+            var startBtn = doc.rootVisualElement.Q<Button>("Start");
+            if (startBtn!=null) 
+                startBtn.clicked -= OnStartBtnOnClicked;
+        }
+
+        void OnJumpBtnOnClicked()
+        {
+            Entities.ForEach((ref PhysicsVelocity vel, in PhysicsMass mass) 
+                => vel.ApplyLinearImpulse(in mass, math.up() * 0.5f)).Run();
+        }
+
+        void OnStartBtnOnClicked()
+        {
+            if (TryGetSingleton<GlobalData>(out var gd))
+            {
+                gd.HasStarted = true;
+                SetSingleton(gd);
+            }
+        }
+
         protected override void OnUpdate()
         {
-            if (m_JumpPressed)
-            {
-                Entities.ForEach((ref PhysicsVelocity vel, in PhysicsMass mass) 
-                    => vel.ApplyLinearImpulse(in mass, math.up() * 0.5f)).Run();
-                m_JumpPressed = false;
-            }
-
-            if (m_Label != null && m_EntityToColorSystem.EntityToColor.IsCreated)
+            if (m_EntityToColorSystem.EntityToColor.IsCreated)
             {
                 var str = new FixedString512Bytes();
+                
                 var antString = m_AntString;
                 var colorTagStart = m_ColorTagStart;
                 var colors = m_EntityToColorSystem.EntityToColor;
@@ -105,6 +118,7 @@ namespace Systems
                     str.Append(']');
                     str.Append('\n');
                 }).Run();
+                
                 m_Label.text = str.ToString();
             }
 #if !UNITY_EDITOR
