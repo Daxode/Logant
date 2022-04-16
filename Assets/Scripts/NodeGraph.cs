@@ -31,7 +31,6 @@ namespace Systems
             m_NodeEntities = m_NodeQuery.ToEntityArray(Allocator.Persistent);
             Entities.WithStoreEntityQueryInField(ref m_NodeQuery).WithAll<ExecutionLineDataHolder>().ForEach((in Translation t) 
                 => m_Graph.AddNode(new Node(t.Value, .7f))).WithoutBurst().Run();
-            
         }
         
         public bool dirty = true;
@@ -42,22 +41,28 @@ namespace Systems
                 dirty = false;
             }
             
+            // Active Draw path
             var ray = ScreenToRaySystem.ScreenToRay(Mouse.current.position.ReadValue());
             float3 point = ray.GetPoint(-ray.origin.y / ray.direction.y);
-            if (Mouse.current.leftButton.wasPressedThisFrame) {
-                Debug.Log("Pressed");
-                m_Graph.StartNodeActive(point);
-            } else if (Mouse.current.leftButton.wasReleasedThisFrame) {
-                Debug.Log("Released");
-                m_Graph.EndNodeActive(point);
-            }
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+                m_Graph.StartNodeDraw(point, (int)PathType.StopPath);
+            else if (Mouse.current.leftButton.wasReleasedThisFrame)
+                m_Graph.EndNodeDraw(point);
+            m_Graph.UpdateNodeDraw(point);
 
+            // Debug Graph Nodes
             if (Mouse.current.rightButton.wasPressedThisFrame)
-                foreach (var (fromI, toI) in m_Graph.Nodes)
-                    Debug.Log($"From: {m_NodeEntities[fromI]}_{m_EntityToColor.EntityToColor[m_NodeEntities[fromI]]} - To: {m_NodeEntities[toI]}_{m_EntityToColor.EntityToColor[m_NodeEntities[toI]]}");
-
-            m_Graph.DrawToPoint(point);
+                foreach (var (fromI, toI, pathType) in m_Graph.Nodes)
+                    Debug.Log($"{(PathType)pathType} - From: {m_NodeEntities[fromI]}_{m_EntityToColor.EntityToColor[m_NodeEntities[fromI]]} - To: {m_NodeEntities[toI]}_{m_EntityToColor.EntityToColor[m_NodeEntities[toI]]}");
         }
+    }
+    
+    public enum PathType
+    {
+        DropPath,
+        PickupPath,
+        WaitPath,
+        StopPath
     }
 
     public struct Node
@@ -70,20 +75,20 @@ namespace Systems
             Radius = radius;
         }
     }
-    
+
     [WorldSystemFilter(WorldSystemFilterFlags.Default|WorldSystemFilterFlags.Editor)]
     public partial class NodeGraph : SystemBaseDraw
     {
         bool m_ActivePathEnabled;
         PolylinePath m_ActivePath;
         NativeList<Node> m_Nodes;
-        NativeList<(int, int)> nodePairs;
+        NativeList<(int, int, int)> m_NodePairs;
         protected override void OnCreate()
         {
             base.OnCreate();
             m_ActivePath = new PolylinePath();
             m_Nodes = new NativeList<Node>(100, Allocator.Persistent);
-            nodePairs = new NativeList<(int, int)>(100, Allocator.Persistent);
+            m_NodePairs = new NativeList<(int, int, int)>(100, Allocator.Persistent);
         }
 
         protected override void OnDestroy()
@@ -92,20 +97,23 @@ namespace Systems
             m_Nodes.Dispose();
         }
 
-        public NativeArray<(int, int)> Nodes => nodePairs.AsArray();
-
+        public NativeArray<(int, int, int)> Nodes => m_NodePairs.AsArray();
         public void ClearNodes() => m_Nodes.Clear();
         public void AddNode(Node node) => m_Nodes.Add(node);
 
-        const float k_ArrowRadius = .3f;
-
         int? m_ActiveNodeIndex;
-        public void StartNodeActive(float3 position) => m_ActiveNodeIndex = TryGetHitNodeIndex(position);
-        public void EndNodeActive(float3 position)
+        int m_PathID;
+        public void StartNodeDraw(float3 position, int pathId)
+        {
+            m_ActiveNodeIndex = TryGetHitNodeIndex(position);
+            m_PathID = pathId;
+        }
+
+        public void EndNodeDraw(float3 position)
         {
             var getNode = TryGetHitNodeIndex(position);
             if (getNode.HasValue && getNode != m_ActiveNodeIndex && m_ActiveNodeIndex.HasValue) 
-                nodePairs.Add((m_ActiveNodeIndex.Value, getNode.Value));
+                m_NodePairs.Add((m_ActiveNodeIndex.Value, getNode.Value, m_PathID));
 
             m_ActivePathEnabled = false;
             m_ActiveNodeIndex = null;
@@ -123,7 +131,7 @@ namespace Systems
             return null;
         }
 
-        public void DrawToPoint(float3 destination)
+        public void UpdateNodeDraw(float3 destination)
         {
             // Create Path
             if (!m_ActiveNodeIndex.HasValue) return;
@@ -157,8 +165,7 @@ namespace Systems
             {
                 var toDest = destination - activeNode.Position;
                 var dirToDest = math.normalizesafe(toDest);
-                var destLengthMinusArrow = math.max(activeNode.Radius+0.01f,math.length(toDest));
-                var pTo = activeNode.Position + dirToDest * destLengthMinusArrow;
+                var pTo = activeNode.Position + dirToDest * math.max(activeNode.Radius+0.01f,math.length(toDest));
                 var pFrom = activeNode.Position + dirToDest * activeNode.Radius;
 
                 // If valid path
@@ -173,6 +180,7 @@ namespace Systems
             }
         }
 
+        const float k_ArrowRadius = .3f;
         void ThinAtArrowEndPoint(float3 arrowEndPoint)
         {
             for (var i = m_ActivePath.Count - 1; i >= 0; i--)
@@ -219,6 +227,8 @@ namespace Systems
             }
         }
 
+        #region Utility
+
         static void DrawArrowHead(float3 startP, float3 endP, float radius, float length, Color col)
         {
             var dirWithSize = endP - startP;
@@ -244,5 +254,7 @@ namespace Systems
                 p.SetColor(i, Color.HSVToRGB(color.x, color.y, color.z));
             }
         }
+
+        #endregion
     }
 }
