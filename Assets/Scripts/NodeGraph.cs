@@ -159,7 +159,7 @@ namespace Systems
                 m_ActivePath.ClearAllPoints();
                 m_ActivePath.AddPoint(pFrom);
                 m_ActivePath.BezierTo(pFrom+dirActiveToMouse*(1+endStrength),pTo+dirDestToMouse*(1+endStrength*2),pTo,100);
-                ThinAtArrowEndPoint(pTo);
+                ThinAtArrowEndPoint(m_ActivePath, pTo);
             }
             else
             {
@@ -176,17 +176,17 @@ namespace Systems
                 m_ActivePath.ClearAllPoints();
                 m_ActivePath.AddPoint(pFrom, 1);
                 m_ActivePath.LineTo(pTo,100);
-                ThinAtArrowEndPoint(pTo);
+                ThinAtArrowEndPoint(m_ActivePath, pTo);
             }
         }
 
         const float k_ArrowRadius = .3f;
-        void ThinAtArrowEndPoint(float3 arrowEndPoint)
+        static void ThinAtArrowEndPoint(PolylinePath path, float3 arrowEndPoint)
         {
-            for (var i = m_ActivePath.Count - 1; i >= 0; i--)
+            for (var i = path.Count - 1; i >= 0; i--)
             {
-                var dist = math.distance(m_ActivePath[i].point, arrowEndPoint);
-                m_ActivePath.SetThickness(i, math.clamp(dist * 10, .05f, 1));
+                var dist = math.distance(path[i].point, arrowEndPoint);
+                path.SetThickness(i, math.clamp(dist * 10, .05f, 1));
                 if (dist > k_ArrowRadius)
                     break;
             }
